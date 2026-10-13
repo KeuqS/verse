@@ -57,6 +57,7 @@ jobs:
             VERSE_BROWSER="$browser" node scripts/smoke.mjs
             VERSE_BROWSER="$browser" node scripts/privacy.mjs
             VERSE_BROWSER="$browser" node scripts/concurrency.mjs
+            VERSE_BROWSER="$browser" node scripts/backup-freshness.mjs
           done
       - name: Upload screenshots
         if: always()
