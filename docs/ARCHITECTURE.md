@@ -32,7 +32,8 @@ Deployment: GitHub Actions → GitHub Pages /verse/
 | `src/hooks/useLocalPoems.ts` | Async storage hook, cross-tab refreshes, success/error reporting |
 | `src/lib/poemStore.ts` | IndexedDB transactions, conflict checks, idempotent legacy migration |
 | `src/lib/poems.ts` | Validated record format and versioned export/import |
-| `src/hooks/useLocalSuggestions.ts` | Deterministic curated example catalogue |
+| `src/lib/literaryExamples.ts` | Shared poet registry, editorial catalogue, Unicode word-boundary matching |
+| `src/hooks/useLocalSuggestions.ts` | Catalogue selection and local dismissal/application state |
 | `src/components/SuggestionsPanel.tsx` | Example presentation and explicit application guard |
 | `src/components/SharingPanel.tsx` | Native/web sharing and clipboard behavior |
 | `src/components/FileUpload.tsx` | Plain-text import workflow |
@@ -43,14 +44,14 @@ Deployment: GitHub Actions → GitHub Pages /verse/
 1. **Data durability:** storage is written before a successful save is reported. Read or write failure is surfaced to the user.
 2. **No silent clobbering:** malformed stored data is not replaced with an empty collection; backup imports validate before writing and prefer existing records for matching IDs.
 3. **Transactional local scope:** saved poems are individual IndexedDB records scoped to a browser origin/profile. All current create/update/delete/import operations run inside readwrite transactions; record comparisons reject stale same-poem updates and deletes. BroadcastChannel prompts other tabs to reload committed data.
-4. **Suggestion scope:** examples are prewritten. An application action is enabled only if the current text contains the exact original phrase.
+4. **Suggestion scope:** examples are prewritten exercises, one set per selectable influence. An application action is enabled only if the current text contains the exact case-sensitive original phrase at standalone Unicode word boundaries. The first matching occurrence changes only after explicit consent.
 5. **Public/private boundary:** there are no built-in credentials, auth, API calls for inference, or server persistence. External share actions happen only through user interaction.
 
 ## Trade-offs and future improvements
 
 IndexedDB transactions serialize writes across tabs within a browser origin without a remote server. On initial use, the original localStorage array is validated and copied in an atomic transaction alongside a migration marker; existing IndexedDB records win ID collisions. The source localStorage key is deliberately retained for recovery, and is not synchronized with subsequent writes. Old cached Verse clients still accessing that key do not participate in current storage; refresh all tabs. Browser data deletion, quota limits and device failure remain possible; keep external backups. For collaboration or cross-device access, a separate authenticated backend and explicit privacy controls would be necessary.
 
-The template catalogue is intentionally narrow: it does not model meter, linguistic quality, or authorial style empirically. Real analysis needs a documented method, evaluation dataset, failure cases, and independently assessed claims. No mathematical or literary-quality guarantee is made.
+The editorial catalogue is intentionally narrow: it does not model meter, linguistic quality, or authorial style empirically. See [the literary method](LITERARY_METHOD.md) for provenance and matching limitations. Real analysis needs a documented method, evaluation dataset, failure cases, and independently assessed claims. No mathematical or literary-quality guarantee is made.
 
 ## Build boundary
 
