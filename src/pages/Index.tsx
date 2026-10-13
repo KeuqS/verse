@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { useLocalPoems } from "@/hooks/useLocalPoems";
 import type { Poem } from "@/lib/poems";
 import { PoemConflictError } from "@/lib/poemStore";
+import { applyLiteraryExample } from "@/lib/literaryExamples";
 import { useLocalSuggestions } from "@/hooks/useLocalSuggestions";
 import { useToast } from "@/hooks/use-toast";
 
@@ -183,11 +184,11 @@ export default function Index() {
   const applyExample = async (id: string) => {
     const suggestion = suggestions.find(item => item.id === id && item.status === "pending");
     if (!suggestion) return;
-    if (!content.includes(suggestion.original_text)) {
-      toast({ title: "Example does not match", description: "The source phrase does not occur in your draft.", variant: "destructive" });
+    const changed = applyLiteraryExample(content, suggestion);
+    if (changed === null) {
+      toast({ title: "Example does not match", description: "The exact source phrase is absent from your draft.", variant: "destructive" });
       return;
     }
-    const changed = content.replace(suggestion.original_text, suggestion.suggested_text);
     setContent(changed);
     revision.current += 1;
     setDirty(true);
