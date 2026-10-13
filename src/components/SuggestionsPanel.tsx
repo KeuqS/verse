@@ -6,7 +6,6 @@ import type { Suggestion } from "@/hooks/useLocalSuggestions";
 
 interface Props {
   suggestions: Suggestion[];
-  selectedPoet?: string;
   content: string;
   onGenerateSuggestions: () => void;
   onAcceptSuggestion: (id: string) => void;
@@ -15,7 +14,7 @@ interface Props {
 
 /** Static examples are illustrative; applying one changes only an exact matching phrase. */
 export function SuggestionsPanel({
-  suggestions, selectedPoet, content, onGenerateSuggestions, onAcceptSuggestion, onRejectSuggestion,
+  suggestions, content, onGenerateSuggestions, onAcceptSuggestion, onRejectSuggestion,
 }: Props) {
   const pending = suggestions.filter(item => item.status === "pending");
   const hasContent = content.trim().length > 0;
@@ -28,7 +27,7 @@ export function SuggestionsPanel({
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Prewritten, locally stored examples{selectedPoet ? " for your selected influence" : ""}.
+          Prewritten literary examples selected from a local catalogue.
           They do not analyze your poem or use AI.
         </p>
         <Button variant="outline" onClick={onGenerateSuggestions} disabled={!hasContent} className="w-full">

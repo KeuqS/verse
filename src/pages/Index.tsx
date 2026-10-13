@@ -155,7 +155,7 @@ export default function Index() {
             <PoetSelector selectedPoet={selectedPoet} onPoetSelect={changePoet} />
             <FileUpload onTextImport={text => { setContent(text); setCurrentPoemId(null); loadedId.current = null; setDirty(true); clearSuggestions(); navigate("/write", { replace: true }); }}
               initialOpen={searchParams.get("upload") === "true"} />
-            <SuggestionsPanel suggestions={suggestions} selectedPoet={selectedPoet} content={content}
+            <SuggestionsPanel suggestions={suggestions} content={content}
               onGenerateSuggestions={showExamples} onAcceptSuggestion={applyExample}
               onRejectSuggestion={rejectSuggestion} />
             <SharingPanel content={content} title={title} onSavePoem={save} />

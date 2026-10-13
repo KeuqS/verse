@@ -28,3 +28,8 @@ dist-ssr
 .env.*
 !.env.example
 coverage
+
+# Browser test outputs and private writing exports
+test-artifacts/
+playwright-report/
+verse-backup-*.json
