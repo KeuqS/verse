@@ -84,6 +84,13 @@ prune_one() {
     return
   fi
 
+  open_branch_prs="$(gh api "repos/${GITHUB_REPOSITORY}/pulls?state=open&head=fraware:${name}&per_page=100" --jq 'length')"
+  if [[ "$open_branch_prs" != "0" ]]; then
+    echo "::warning::An open PR now references ${name}; retaining branch"
+    skipped=$((skipped + 1))
+    return
+  fi
+
   gh api --method DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${name}" >/dev/null
   echo "Removed ${disposition} PR #${number} branch ${name}"
   removed=$((removed + 1))
@@ -106,14 +113,9 @@ if [[ -n "$self_json" ]]; then
   self_sha="$(jq -r '.commit.sha' <<< "$self_json")"
   self_protected="$(jq -r '.protected' <<< "$self_json")"
   self_prs="$(gh api "repos/${GITHUB_REPOSITORY}/pulls?state=closed&head=fraware:${self_branch}&per_page=100")"
-  self_num="$(jq -r '[.[] | select(.merged_at != null and .merge_commit_sha == env.GITHUB_SHA and .head.sha == env.SELF_SHA)] | first | .number // ""' \
-    --arg dummy "" <<< "$self_prs" 2>/dev/null || true)"
-  # Avoid relying on shell exporting the SHA into jq's environment.
-  if [[ -z "$self_num" ]]; then
-    self_num="$(jq -r --arg sha "$self_sha" --arg release "$GITHUB_SHA" \
-      '[.[] | select(.merged_at != null and .merge_commit_sha == $release and .head.sha == $sha)] | first | .number // ""' \
-      <<< "$self_prs")"
-  fi
+  self_num="$(jq -r --arg sha "$self_sha" --arg release "$GITHUB_SHA" \
+    '[.[] | select(.merged_at != null and .merge_commit_sha == $release and .head.sha == $sha)] | first | .number // ""' \
+    <<< "$self_prs")"
   if [[ "$self_protected" == "false" && -n "$self_num" ]]; then
     prune_one "$self_branch" "$self_sha" "$self_num" "merged"
   else
