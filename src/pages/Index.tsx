@@ -3,6 +3,9 @@ import { useBlocker, useNavigate, useSearchParams } from "react-router-dom";
 import { FilePlus2, Scroll } from "lucide-react";
 import { VerseMark } from "@/components/VerseMark";
 import { WritingCanvas } from "@/components/WritingCanvas";
+import { CraftExperiments } from "@/components/CraftExperiments";
+import { isCurrentCraftPreview } from "@/lib/craftExperiments";
+import type { CraftPreview, DraftSelection } from "@/lib/craftExperiments";
 import { PoetSelector } from "@/components/PoetSelector";
 import { SuggestionsPanel } from "@/components/SuggestionsPanel";
 import { SharingPanel } from "@/components/SharingPanel";
@@ -27,6 +30,8 @@ export default function Index() {
   const [conflict, setConflict] = useState(false);
   const [saving, setSaving] = useState(false);
   const [clearWriteUrl, setClearWriteUrl] = useState(false);
+  const [craftSelection, setCraftSelection] = useState<DraftSelection | null>(null);
+  const [experimentUndo, setExperimentUndo] = useState<{ before: string; after: string } | null>(null);
   const savingRef = useRef(false);
   const revision = useRef(0);
   const baseline = useRef<Poem | null>(null);
@@ -70,6 +75,8 @@ export default function Index() {
     setConflict(false);
     setCurrentPoemId(poem.id);
     setContent(poem.content);
+    setCraftSelection(null);
+    setExperimentUndo(null);
     setTitle(poem.title);
     setSelectedPoet(poem.selected_poet || "");
     setDirty(false);
@@ -88,6 +95,8 @@ export default function Index() {
 
   const changeContent = (text: string) => {
     setContent(text);
+    setCraftSelection(null);
+    setExperimentUndo(null);
     revision.current += 1;
     setDirty(true);
     clearSuggestions();
@@ -108,6 +117,8 @@ export default function Index() {
     revision.current += 1;
     setConflict(false);
     setContent("");
+    setCraftSelection(null);
+    setExperimentUndo(null);
     setTitle("Untitled Poem");
     setSelectedPoet("");
     setCurrentPoemId(null);
@@ -190,9 +201,26 @@ export default function Index() {
       return;
     }
     setContent(changed);
+    setCraftSelection(null);
+    setExperimentUndo(null);
     revision.current += 1;
     setDirty(true);
     await acceptSuggestion(id);
+  };
+
+  const applyCraftExperiment = (preview: CraftPreview) => {
+    if (!isCurrentCraftPreview(content, craftSelection, preview)) {
+      toast({ title: "Preview expired", description: "Select the passage again before applying an experiment.", variant: "destructive" });
+      return;
+    }
+    const before = content;
+    changeContent(preview.result);
+    setExperimentUndo({ before, after: preview.result });
+  };
+
+  const undoCraftExperiment = () => {
+    if (!experimentUndo || content !== experimentUndo.after) return;
+    changeContent(experimentUndo.before);
   };
 
   return (
@@ -246,13 +274,18 @@ export default function Index() {
               className="mb-4 bg-card/60 text-lg" maxLength={200} />
             <label htmlFor="poem-content" className="block mb-2 text-sm font-medium">Poem</label>
             <WritingCanvas content={content} onContentChange={changeContent}
+              onPassageSelect={setCraftSelection}
               placeholder={"Begin your verse here...\n\nYour words stay in this browser."} />
             <p className="mt-3 text-sm text-muted-foreground">Save explicitly. Your work is not synchronized to another device.</p>
           </div>
           <aside className="space-y-6" aria-label="Writing tools">
             <PoetSelector selectedPoet={selectedPoet} onPoetSelect={changePoet} />
-            <FileUpload onTextImport={text => { setContent(text); setCurrentPoemId(null); loadedId.current = null; baseline.current = null; revision.current += 1; setConflict(false); setDirty(true); clearSuggestions(); setClearWriteUrl(true); }}
+            <FileUpload onTextImport={text => { setContent(text); setCraftSelection(null); setExperimentUndo(null); setCurrentPoemId(null); loadedId.current = null; baseline.current = null; revision.current += 1; setConflict(false); setDirty(true); clearSuggestions(); setClearWriteUrl(true); }}
               initialOpen={searchParams.get("upload") === "true"} />
+            <CraftExperiments content={content} selection={craftSelection}
+              onApply={applyCraftExperiment}
+              canUndo={experimentUndo !== null && content === experimentUndo.after}
+              onUndo={undoCraftExperiment} />
             <SuggestionsPanel suggestions={suggestions} content={content}
               onGenerateSuggestions={showExamples} onAcceptSuggestion={applyExample}
               onRejectSuggestion={rejectSuggestion} />
