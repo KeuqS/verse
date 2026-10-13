@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Feather, FilePlus2, Scroll } from "lucide-react";
+import { FilePlus2, Scroll } from "lucide-react";
+import { VerseMark } from "@/components/VerseMark";
 import { WritingCanvas } from "@/components/WritingCanvas";
 import { PoetSelector } from "@/components/PoetSelector";
 import { SuggestionsPanel } from "@/components/SuggestionsPanel";
@@ -174,7 +175,7 @@ export default function Index() {
       <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-full bg-literary-sage/10"><Feather className="h-6 w-6 text-literary-sage" /></div>
+            <VerseMark />
             <div><h1 className="text-xl font-bold">Verse</h1><p className="text-xs text-muted-foreground">Your writing space</p></div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -220,7 +221,7 @@ export default function Index() {
         </div>
       </main>
       <footer className="mt-12 py-8 border-t text-center text-sm text-muted-foreground">
-        Verse — a private, browser-based writing companion
+        Verse | A private, browser-based writing companion
       </footer>
     </div>
   );

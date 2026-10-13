@@ -31,6 +31,7 @@ if (html.includes('lovable.dev') || html.includes('lovable.app') || html.include
   throw new Error('Stale hosted-platform URL in built HTML');
 }
 
+if (/\u2014/.test(html)) throw new Error('Em dash in the rendered HTML document');
 const bundleText = [html, ...assets.filter(name => /\.(css|js)$/.test(name)).map(name => readFileSync(join(outputDir, 'assets', name), 'utf8'))].join("\n");
 if (/fonts\.googleapis\.com|fonts\.gstatic\.com/.test(bundleText)) {
   throw new Error('Google Fonts reference found in the output despite first-party font policy');
@@ -42,4 +43,7 @@ if (!existsSync(join(outputDir, 'fonts', 'crimson-text-OFL.txt')) ||
     !existsSync(join(outputDir, 'fonts', 'ibm-plex-mono-OFL.txt'))) {
   throw new Error('Missing redistributable font license notices');
 }
-console.log(`Built website validated for base ${base} with self-hosted fonts`);
+if (!bundleText.includes('verse-mark.jpg')) {
+  throw new Error('Application bundle does not reference the favicon as its brand mark');
+}
+console.log(`Built website validated for base ${base}, shared artwork, and self-hosted fonts`);

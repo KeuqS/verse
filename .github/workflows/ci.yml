@@ -25,6 +25,8 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
+      - name: Verify shared brand asset and dash-free website copy
+        run: node scripts/check-brand.mjs
       - run: npm run test:unit
       - name: Block runtime and build dependency advisories
         run: npm audit --audit-level=moderate
@@ -59,6 +61,7 @@ jobs:
             VERSE_BROWSER="$browser" node scripts/concurrency.mjs
             VERSE_BROWSER="$browser" node scripts/style-regression.mjs
             VERSE_BROWSER="$browser" node scripts/backup-freshness.mjs
+            VERSE_BROWSER="$browser" node scripts/brand-regression.mjs
           done
       - name: Upload screenshots
         if: always()

@@ -44,7 +44,7 @@ export function SuggestionsPanel({
                 <p><span className="text-muted-foreground">To:</span> <span className="font-medium text-literary-sage">{suggestion.suggested_text}</span></p>
               </div>
               <p className="text-xs text-muted-foreground italic">{suggestion.explanation}</p>
-              {!applicable && <p className="text-xs text-muted-foreground">Illustration only — this phrase is absent from your draft.</p>}
+              {!applicable && <p className="text-xs text-muted-foreground">Illustration only. This phrase is absent from your draft.</p>}
               <div className="flex gap-2">
                 <Button size="sm" onClick={() => onAcceptSuggestion(suggestion.id)} disabled={!applicable}>
                   <Check className="h-4 w-4 mr-1" /> Apply to draft
