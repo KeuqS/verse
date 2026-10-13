@@ -71,6 +71,12 @@ const Landing = () => {
               </Button>
           </div>
 
+          <p className="max-w-2xl mx-auto mb-12 text-sm leading-relaxed text-muted-foreground">
+            Your poems stay on this device, in this browser. There are no accounts or cloud backups.
+            Save your drafts and regularly export a backup from My Collection. Clearing browser data
+            can permanently erase saved work.
+          </p>
+
           {/* Feature Highlights */}
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="text-center group">

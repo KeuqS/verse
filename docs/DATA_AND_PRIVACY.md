@@ -33,12 +33,12 @@ The exported file contains all writing in plain text: protect it accordingly. Im
 ## Trust and failure boundaries
 
 - A public GitHub repository contains application source, **not users' poems**. Browser writing does not enter the GitHub repository.
-- The page fetches typography from Google Fonts. Normal network metadata such as IP address and browser headers is disclosed to Google during font requests; poem content is not attached to those requests. System fonts serve as fallbacks if Google Fonts is blocked.
+- Typography is bundled with the site using Fontsource packages; the application does not request Google Fonts at runtime. Crimson Text and IBM Plex Mono are OFL-1.1 fonts. Normal network metadata is shared with the static site host when loading application assets.
 - There is no built-in server account, database, or cloud backup.
 - A browser can deny storage or clipboard access, or storage can reach its quota. Save actions report failure.
 - Clearing site data, private browsing, or changing domain/origin can orphan prior poems. There is no migration from a previous Lovable domain unless its browser data is exported separately.
 - Browser storage is readable by JavaScript executing in this origin. Treat external scripts, dependency updates, and XSS prevention as privacy-critical.
-- External share destinations receive whatever the user chooses to transmit; review third-party terms separately.
+- Clicking Tumblr or X first asks for confirmation. If accepted, opening the share URL transmits prefilled poem text to the chosen service **before any final post is published**. Native sharing and copying require separate user actions; review destination privacy terms.
 - Never commit local `.env`, backup JSON files with real writing, access tokens, or credentials.
 
 ## Data migration

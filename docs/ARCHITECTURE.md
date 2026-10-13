@@ -53,3 +53,7 @@ The template catalogue is intentionally narrow: it does not model meter, linguis
 ## Build boundary
 
 `GITHUB_PAGES=true` changes Vite's public base path to `/verse/`. The validated CI publish job builds using that flag only after quality, browser and accessibility jobs pass. It checks compiled assets, copies `index.html` to `404.html` for SPA fallback, and deploys `dist/`. `npm run verify:dist` must receive the same variable when validating the Pages build.
+
+## Browser network boundary
+
+The production bundle self-hosts its typography using Fontsource. A Content Security Policy limits scripts, fonts, styles and connections to the static site's own origin (with inline styling needed for UI components). No poem is uploaded as part of drafting, save, import, export or suggestion use. Opening an external sharing destination requires confirmation and transfers the prefilled text to that destination even if publication is cancelled.
