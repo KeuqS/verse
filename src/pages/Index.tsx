@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useBlocker, useNavigate, useSearchParams } from "react-router-dom";
 import { FilePlus2, Scroll } from "lucide-react";
 import { VerseMark } from "@/components/VerseMark";
 import { WritingCanvas } from "@/components/WritingCanvas";
@@ -25,16 +25,39 @@ export default function Index() {
   const [dirty, setDirty] = useState(false);
   const [conflict, setConflict] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [clearWriteUrl, setClearWriteUrl] = useState(false);
   const savingRef = useRef(false);
   const revision = useRef(0);
   const baseline = useRef<Poem | null>(null);
   const loadedId = useRef<string | null>(null);
+  const keepWritingButton = useRef<HTMLButtonElement>(null);
   const { poems, error: storageError, loading, savePoem, updatePoem } = useLocalPoems();
   const { suggestions, generateSuggestions, acceptSuggestion, rejectSuggestion, clearSuggestions } = useLocalSuggestions();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const requestedPoem = searchParams.get("poem");
+
+  // Blocks all in-app route and query changes, including browser Back/Forward.
+  // A confirmed New/import action clears the URL through the single-use
+  // clearWriteUrl state, without disabling protection on unrelated navigations.
+  const blocker = useBlocker(({ currentLocation, nextLocation }) =>
+    (dirty || saving) && !clearWriteUrl &&
+    (currentLocation.pathname !== nextLocation.pathname ||
+      currentLocation.search !== nextLocation.search ||
+      currentLocation.hash !== nextLocation.hash),
+  );
+
+  useEffect(() => {
+    if (blocker.state === "blocked") keepWritingButton.current?.focus();
+  }, [blocker.state]);
+
+  useEffect(() => {
+    if (!clearWriteUrl) return;
+    navigate("/write", { replace: true });
+    setClearWriteUrl(false);
+  }, [clearWriteUrl, navigate]);
+
 
   useEffect(() => {
     if (!requestedPoem || loadedId.current === requestedPoem) return;
@@ -53,14 +76,14 @@ export default function Index() {
   }, [requestedPoem, poems, clearSuggestions]); // The loaded ID prevents reloading over unsaved edits.
 
   useEffect(() => {
-    if (!dirty || !content.trim()) return;
+    if (!dirty && !saving) return;
     const warn = (event: BeforeUnloadEvent) => {
       event.preventDefault();
       event.returnValue = "";
     };
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty, content]);
+  }, [dirty, saving]);
 
   const changeContent = (text: string) => {
     setContent(text);
@@ -78,7 +101,7 @@ export default function Index() {
 
   const resetDraft = () => {
     if (savingRef.current) return;
-    if (dirty && content.trim() && !window.confirm("Discard unsaved changes to your current poem?")) return;
+    if (dirty && !window.confirm("Discard unsaved changes to your current poem?")) return;
     loadedId.current = null;
     baseline.current = null;
     revision.current += 1;
@@ -89,7 +112,7 @@ export default function Index() {
     setCurrentPoemId(null);
     setDirty(false);
     clearSuggestions();
-    navigate("/write", { replace: true });
+    setClearWriteUrl(true);
   };
 
   const save = async (): Promise<boolean> => {
@@ -166,6 +189,7 @@ export default function Index() {
     }
     const changed = content.replace(suggestion.original_text, suggestion.suggested_text);
     setContent(changed);
+    revision.current += 1;
     setDirty(true);
     await acceptSuggestion(id);
   };
@@ -181,7 +205,7 @@ export default function Index() {
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="ghost" size="sm" disabled={saving} onClick={resetDraft}><FilePlus2 className="mr-1 h-4 w-4" /> New</Button>
             <Button variant="outline" size="sm" disabled={saving} onClick={() => void save()}>Save poem</Button>
-            <CollectionLink confirmUnsaved={dirty && !!content.trim()} />
+            <CollectionLink />
             <Badge variant="secondary"><Scroll className="h-3 w-3 mr-1" />
               {!currentPoemId ? "Unsaved" : dirty ? "Modified" : "Saved"}
             </Badge>
@@ -189,6 +213,21 @@ export default function Index() {
         </div>
       </header>
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {blocker.state === "blocked" && (
+          <section role="alert" aria-labelledby="verse-unsaved-heading"
+            className="mb-6 space-y-3 rounded border border-destructive p-4">
+            <h2 id="verse-unsaved-heading" className="font-semibold">Unsaved draft</h2>
+            <p>Your writing has not been saved. Keep editing or explicitly discard
+              your local changes before leaving this page.</p>
+            {saving && <p role="status">A save is still in progress. Finish it before leaving.</p>}
+            <div className="flex flex-wrap gap-2">
+              <Button ref={keepWritingButton} variant="outline"
+                onClick={() => blocker.reset()}>Keep writing</Button>
+              <Button variant="destructive" disabled={saving}
+                onClick={() => blocker.proceed()}>Discard changes and leave</Button>
+            </div>
+          </section>
+        )}
         {storageError && <div role="alert" className="mb-6 p-4 rounded border border-destructive text-destructive">{storageError}</div>}
         {conflict && (
           <div role="alert" className="mb-6 p-4 rounded border border-destructive text-destructive space-y-3">
@@ -211,7 +250,7 @@ export default function Index() {
           </div>
           <aside className="space-y-6" aria-label="Writing tools">
             <PoetSelector selectedPoet={selectedPoet} onPoetSelect={changePoet} />
-            <FileUpload onTextImport={text => { setContent(text); setCurrentPoemId(null); loadedId.current = null; baseline.current = null; revision.current += 1; setConflict(false); setDirty(true); clearSuggestions(); navigate("/write", { replace: true }); }}
+            <FileUpload onTextImport={text => { setContent(text); setCurrentPoemId(null); loadedId.current = null; baseline.current = null; revision.current += 1; setConflict(false); setDirty(true); clearSuggestions(); setClearWriteUrl(true); }}
               initialOpen={searchParams.get("upload") === "true"} />
             <SuggestionsPanel suggestions={suggestions} content={content}
               onGenerateSuggestions={showExamples} onAcceptSuggestion={applyExample}
