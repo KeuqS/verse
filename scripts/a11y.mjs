@@ -13,6 +13,8 @@ try {
   ]) {
     const context = await browser.newContext({ viewport });
     const page = await context.newPage();
+    // axe injects code for testing; normal browser smoke tests keep CSP enforced.
+    await page.setBypassCSP(true);
     page.on("dialog", dialog => dialog.accept());
 
     for (const route of ["/", "/write", "/collection"]) {

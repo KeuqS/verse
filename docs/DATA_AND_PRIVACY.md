@@ -33,6 +33,7 @@ The exported file contains all writing in plain text: protect it accordingly. Im
 ## Trust and failure boundaries
 
 - A public GitHub repository contains application source, **not users' poems**. Browser writing does not enter the GitHub repository.
+- The page fetches typography from Google Fonts. Normal network metadata such as IP address and browser headers is disclosed to Google during font requests; poem content is not attached to those requests. System fonts serve as fallbacks if Google Fonts is blocked.
 - There is no built-in server account, database, or cloud backup.
 - A browser can deny storage or clipboard access, or storage can reach its quota. Save actions report failure.
 - Clearing site data, private browsing, or changing domain/origin can orphan prior poems. There is no migration from a previous Lovable domain unless its browser data is exported separately.

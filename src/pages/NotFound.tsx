@@ -1,27 +1,17 @@
-import { useLocation, Link } from "react-router-dom";
-import { useEffect } from "react";
+import { Link } from "react-router-dom";
+import { BookOpen } from "lucide-react";
 
-const NotFound = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname
-    );
-  }, [location.pathname]);
-
+export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">404</h1>
-        <p className="text-xl text-gray-600 mb-4">Oops! Page not found</p>
-        <Link to="/" className="text-blue-500 hover:text-blue-700 underline">
-          Return to Home
+    <main className="min-h-screen flex items-center justify-center bg-background px-6 font-literary">
+      <div className="text-center max-w-md">
+        <BookOpen className="h-12 w-12 text-literary-sage mx-auto mb-5" aria-hidden="true" />
+        <h1 className="text-4xl font-bold text-foreground mb-4">Page not found</h1>
+        <p className="text-muted-foreground mb-6">There is no page at this address. Your saved poems are in this browser's collection.</p>
+        <Link to="/" className="inline-flex items-center justify-center rounded-md bg-primary px-5 py-2 text-primary-foreground font-medium hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+          Return home
         </Link>
       </div>
-    </div>
+    </main>
   );
-};
-
-export default NotFound;
+}

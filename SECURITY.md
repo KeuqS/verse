@@ -19,3 +19,9 @@ Include the affected commit, reproduction steps using synthetic text, browser an
 - Treat successful compilation separately from security review. No security guarantee is implied by a green CI check.
 
 The current inherited dependency audit is tracked in [issue #13](https://github.com/fraware/verse/issues/13).
+
+## Recorded dependency review (12 October 2026)
+
+The initial dependency tree reported 37 advisories, including 29 high, and 20 reports under `npm audit --omit=dev`. After removing unused UI modules, pruning production dependencies, and updating React Router to v7.18.4, the runner reported **8 development/build-tool advisories** (5 high and 3 moderate), and **zero advisories in production dependencies**. CI blocks moderate-or-higher production advisories; detailed limitations are recorded in [Dependency inventory](docs/DEPENDENCIES.md).
+
+A zero npm production-audit count is not a proof of application security. Eight build-tool reports still warrant review, particularly if untrusted assets or configuration files are processed by the build runner. No active exploitation has been established from these counts alone.

@@ -68,6 +68,7 @@ See [data model and privacy](docs/DATA_AND_PRIVACY.md) for the backup format and
 - [Testing](docs/TESTING.md) — checks, browser smoke cases, and validation limits
 - [Contributing](CONTRIBUTING.md) — change process and review criteria
 - [Security](SECURITY.md) — reporting and safe handling
+- [Dependency inventory](docs/DEPENDENCIES.md) — advisory evidence and build-tool risk
 - [Dependency audit issue](https://github.com/fraware/verse/issues/13) — inherited package advisories awaiting classification
 
 The source was migrated from the owner's private `verse-whisper-alchemy` project, at source commit `801efa918727e5fa805d616ea3f2ce7cc2b6d8f2`. The private source history, `.env`, and unused Lovable/Supabase integrations were excluded from this public repository.
