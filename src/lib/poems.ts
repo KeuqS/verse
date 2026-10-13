@@ -1,7 +1,7 @@
 /** Versioned, validated browser storage for Verse documents. */
 export const POEMS_KEY = "verse_poems";
 export const BACKUP_VERSION = 1;
-export const MAX_BACKUP_BYTES = 2 * 1024 * 1024;
+export const MAX_BACKUP_BYTES = 20 * 1024 * 1024;
 
 export interface Poem {
   id: string;
@@ -62,7 +62,7 @@ export function makeBackup(poems: Poem[]): Backup {
 
 export function parseBackup(text: string): Poem[] {
   if (new TextEncoder().encode(text).length > MAX_BACKUP_BYTES) {
-    throw new Error("Backup exceeds the 2 MB import limit.");
+    throw new Error("Backup exceeds the 20 MB import limit.");
   }
   let parsed: unknown;
   try {

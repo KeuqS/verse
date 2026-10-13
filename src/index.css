@@ -38,7 +38,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 156 40% 28%;
 
     --radius: 0.5rem;
 
@@ -105,5 +105,14 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+/* Respect motion preferences without changing the design for other users. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

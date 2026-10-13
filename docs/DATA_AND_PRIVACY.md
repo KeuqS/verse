@@ -28,7 +28,7 @@ Local poems are stored as a JSON array at `localStorage["verse_poems"]`.
 }
 ```
 
-The exported file contains all writing in plain text: protect it accordingly. Import is capped at 2 MB; invalid JSON, malformed documents, and duplicate IDs are rejected. An import adds new IDs and keeps existing records in collisions. This is **merge-only**, not a restore-to-exact-state operation. Export a backup before importing, deleting, or clearing site data.
+The exported file contains all writing in plain text: protect it accordingly. Import is capped at 20 MB; invalid JSON, malformed documents, and duplicate IDs are rejected. An import adds new IDs and keeps existing records in collisions. This is **merge-only**, not a restore-to-exact-state operation. Export a backup before importing, deleting, or clearing site data.
 
 ## Trust and failure boundaries
 
