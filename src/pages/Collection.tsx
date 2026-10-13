@@ -8,14 +8,12 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useLocalPoems } from "@/hooks/useLocalPoems";
 import { makeBackup, MAX_BACKUP_BYTES, parseBackup } from "@/lib/poems";
-import type { Poem } from "@/lib/poems";
 
 export default function Collection() {
   const { poems, error, deletePoem, updatePoem, importPoems } = useLocalPoems();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
-  const editingBaseline = useRef<Poem | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -35,29 +33,20 @@ export default function Collection() {
   }
 
   async function renamePoem() {
-    if (!editingId || !editingBaseline.current) return;
+    if (!editingId) return;
     const title = editingTitle.trim() || "Untitled Poem";
-    try {
-      await updatePoem(editingId, { title }, editingBaseline.current);
-      editingBaseline.current = null;
-      setEditingId(null);
-      toast({ title: "Title saved" });
-    } catch (cause) {
-      showError(cause instanceof Error ? cause.message : "The title was not saved.");
-    }
+    const success = await updatePoem(editingId, { title });
+    if (!success) { showError("The title was not saved."); return; }
+    setEditingId(null);
+    toast({ title: "Title saved" });
   }
 
   async function removeSelected() {
     if (!selectedPoem) return;
-    const expected = selectedPoem;
-    if (!window.confirm(`Permanently delete “${expected.title}” from this browser? Export a backup first if needed.`)) return;
-    try {
-      await deletePoem(expected.id, expected);
-      setSelectedId(null);
-      toast({ title: "Poem deleted" });
-    } catch (cause) {
-      showError(cause instanceof Error ? cause.message : "The poem could not be deleted.");
-    }
+    if (!window.confirm(`Permanently delete “${selectedPoem.title}” from this browser? Export a backup first if needed.`)) return;
+    if (!(await deletePoem(selectedPoem.id))) { showError("The poem could not be deleted."); return; }
+    setSelectedId(null);
+    toast({ title: "Poem deleted" });
   }
 
   function exportCollection() {
@@ -84,7 +73,7 @@ export default function Collection() {
     if (file.size > MAX_BACKUP_BYTES) { showError("Backup exceeds the 20 MB import limit."); return; }
     try {
       const imported = parseBackup(await file.text());
-      const added = await importPoems(imported);
+      const added = importPoems(imported);
       toast({ title: "Backup restored", description: `${added} poems added. Existing IDs were preserved.` });
     } catch (cause) {
       showError(cause instanceof Error ? cause.message : "Invalid backup file.");
@@ -142,14 +131,14 @@ export default function Collection() {
                       type="button"
                       className="text-left flex-1 min-w-0 p-2 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-literary-sage"
                       aria-current={selectedPoem?.id === poem.id ? "true" : undefined}
-                      onClick={() => { setSelectedId(poem.id); setEditingId(null); editingBaseline.current = null; }}
+                      onClick={() => { setSelectedId(poem.id); setEditingId(null); }}
                     >
                       <span className="block font-semibold truncate">{poem.title}</span>
                       <span className="block text-sm text-muted-foreground line-clamp-2 whitespace-pre-wrap">{poem.content}</span>
                     </button>
                     <Button
                       variant="ghost" size="icon" aria-label={`Rename ${poem.title}`}
-                      onClick={() => { setSelectedId(poem.id); setEditingId(poem.id); setEditingTitle(poem.title); editingBaseline.current = poem; }}
+                      onClick={() => { setSelectedId(poem.id); setEditingId(poem.id); setEditingTitle(poem.title); }}
                     ><Pencil className="h-4 w-4" /></Button>
                   </CardContent>
                 </Card>
