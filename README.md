@@ -1,26 +1,45 @@
-# Verse
+<div align="center">
+
+<img src="./public/assets/verse-mark.jpg" width="88" height="88" alt="Verse brand mark, shared with the website favicon" />
+
+<img src="./docs/assets/verse-readme-cover.svg" alt="Verse. A quiet place for poetry. Write privately. Keep every word your own." width="100%" />
 
 **A quiet, browser-based writing companion for poets.**
 
-Verse preserves a focused editorial interface for drafting, exploring literary examples, organizing poems, and selectively sharing writing. It is a fully static React application and does not depend on Lovable, Supabase, Vercel, hosted AI inference, or an account.
+[**Enter the writing room**](https://fraware.github.io/verse/) · [**Explore the source**](https://github.com/fraware/verse) · [**Understand your privacy**](docs/DATA_AND_PRIVACY.md)
 
-## Features
+<sub>FREE TO USE · PRIVATE BY DEFAULT · NO ACCOUNT</sub>
 
-| Area | Behavior |
-| --- | --- |
-| Writing | Compose and title poems, then save or update them explicitly |
-| Literary influences | Select a poet and inspect curated, prewritten example substitutions |
-| Suggestions | Apply examples only if the exact source phrase appears in the draft; nothing is changed without a click |
-| Collection | Browse saved poems, rename, reopen for editing, copy, or delete with confirmation |
-| Data portability | Export a versioned JSON backup and restore it without replacing conflicting local poem IDs |
-| Import | Import a UTF-8 `.txt` file under 1 MB after confirming draft replacement |
-| Sharing | Copy locally, invoke native share, or open external service composition pages |
+</div>
 
-**Important:** Verse's examples are deterministic templates, not AI-generated critiques or validated metrics of writing quality.
+---
 
-## Quick start
+## The writing room
 
-Node.js **22** or newer and npm are required.
+Verse is a place to draft, revise, and collect poems without handing them to a cloud service. Its typography, warm parchment palette, and considered spacing draw from the printed page. The interface is intentionally small, leaving room for the writing itself.
+
+| **Compose** | **Explore** | **Keep** |
+| :--- | :--- | :--- |
+| Write and title poems in a focused editor. Save a new work or revise an existing one. | Choose a literary influence and inspect a small catalogue of prewritten examples. Apply a substitution only with an explicit click. | Organize a personal collection, revisit earlier writing, import plain text, and carry your work away in a JSON backup. |
+
+> **On literary examples.** The examples are static, curated substitutions. Verse does not analyze a poem with a language model, evaluate its literary quality, or send drafts to a hosted inference service.
+
+## Your words, in your browser
+
+Verse runs as a static site. Its poem collection lives in **IndexedDB in your current browser profile**. There are no accounts, cloud poem storage, analytics uploads, or automatic publication.
+
+- **Private to a browser profile.** Separate profiles have separate collections. Anyone using the same browser profile has access to its stored poems. Verse does not encrypt them.
+- **Designed for concurrent tabs.** IndexedDB transactions coordinate saves and imports. If another tab edits the same poem, Verse preserves your draft and provides a **Save a separate copy** option.
+- **Compatible with older Verse writing.** The first visit copies records from `localStorage["verse_poems"]` into IndexedDB. It leaves the original records untouched. Refresh older open tabs before continuing work.
+- **Backups belong to you.** Use **My Collection → Export backup** regularly. Backups are plain-text JSON files with schema version 1. Import merges new poem IDs without replacing existing entries.
+
+**Important:** Clearing browser data, using temporary/private browsing, losing a device, or switching to a different site origin can leave poems inaccessible. Local browser storage is not a durable substitute for your own backups. External sharing transmits the chosen text to the destination following user confirmation, including before a final social post is published.
+
+Read the [data and privacy guide](docs/DATA_AND_PRIVACY.md) for the storage schema, limits, sharing boundaries, and recovery behavior.
+
+## Opening the atelier locally
+
+You need **Node.js 22 or newer** and npm.
 
 ```bash
 git clone https://github.com/fraware/verse.git
@@ -29,52 +48,60 @@ npm ci
 npm run dev
 ```
 
-Open the address printed by Vite (normally `http://localhost:5173/`).
+Open the address printed by Vite, usually `http://localhost:5173/`.
+
+<details>
+<summary><strong>Build, validate, and preview</strong></summary>
 
 | Command | Purpose |
-| --- | --- |
-| `npm run dev` | Local development server |
+| :--- | :--- |
 | `npm run typecheck` | TypeScript analysis |
 | `npm run lint` | ESLint |
-| `npm run test:unit` | Data-contract regression tests |
-| `npm run build` | Production site in `dist/` |
-| `npm run verify:dist` | Verify static build output |
-| `npm run preview` | Preview the compiled site |
+| `npm run test:unit` | Poem-schema and data-contract tests |
+| `npm run build` | Production assets in `dist/` |
+| `npm run verify:dist` | Validate bundled assets and deployment paths |
+| `npm run preview` | Inspect the production build locally |
 
-The [CI workflow](.github/workflows/ci.yml) runs static checks, whole-dependency-tree auditing, Chromium/Firefox/WebKit functional, privacy-isolation, transactional-integrity and visual style tests, and automated accessibility checks. Publication to GitHub Pages is gated on their success.
+To build specifically for GitHub Pages:
 
-## Deployment
+```bash
+GITHUB_PAGES=true npm run build
+GITHUB_PAGES=true npm run verify:dist
+```
 
-The production target is **GitHub Pages**, at `https://fraware.github.io/verse/`.
+The `/verse/` base path is configured for this repository. Another repository name, domain, or host needs a corresponding deployment path.
 
-1. Under **Settings → Pages**, select **GitHub Actions** as the publishing source.
-2. Push to `main`. After all checks pass, the [publish job](.github/workflows/ci.yml) compiles using the `/verse/` Vite base path and deploys `dist/`.
-3. The workflow includes an SPA fallback for direct navigations to `/verse/write` and `/verse/collection`.
-4. Check the Pages workflow result before treating the site as live.
+</details>
 
-A custom domain needs corresponding GitHub Pages and DNS settings. No external platform is mandatory.
+## The workshop behind the page
 
-## Privacy and data durability
+Verse is a React, TypeScript, Vite, and Tailwind CSS 4 application. It uses locally bundled Crimson Text and IBM Plex Mono fonts, the browser's IndexedDB for poem storage, and a static catalogue of literary examples.
 
-Poems are persisted as individual records in this browser's **IndexedDB** database. Existing poems saved under the legacy `localStorage["verse_poems"]` key are copied into IndexedDB on first use; the legacy copy remains unchanged for recovery. New writing is not synchronized back to that old key. Storage is **browser-profile/device/origin-specific** and is not synchronized to another device. People sharing the same browser profile share the collection.
+Its [GitHub Actions pipeline](.github/workflows/ci.yml) checks TypeScript, lint, unit tests, the complete dependency audit, browser-local privacy, data integrity, backup freshness, brand consistency, visual styling, and automated accessibility before publication. Browser regression tests run in Chromium, Firefox, and WebKit. Automated accessibility tests do not replace manual assistive-technology review.
 
-IndexedDB transactions serialize concurrent saves and imports across tabs. Editing a poem from an obsolete snapshot triggers a conflict warning and an explicit **Save a separate copy** action. If browser storage is unavailable, full, or corrupted, Verse reports the error and retains unsaved text in the editor. Refresh old Verse tabs to avoid writing into their obsolete localStorage collection.
+| Read | For |
+| :--- | :--- |
+| [Architecture](docs/ARCHITECTURE.md) | Components, storage transactions, migration, and trade-offs |
+| [Testing and release checks](docs/TESTING.md) | Browser workflows, release gates, and known limits |
+| [Data and privacy](docs/DATA_AND_PRIVACY.md) | Local persistence, sharing behavior, and backups |
+| [Dependency review](docs/DEPENDENCIES.md) | Package audit evidence and compatibility notes |
+| [Contributing](CONTRIBUTING.md) | Working on changes and reviewing pull requests |
+| [Security](SECURITY.md) | Responsible reporting and safe handling of issues |
 
-**Export backups regularly.** Clearing browser data or changing the site's origin can make local content inaccessible. Restore accepts the same version-1 Verse JSON files, validates records, and preserves existing items if IDs conflict. It is not a full synchronization mechanism.
+### Publishing this static application
 
-See [data model and privacy](docs/DATA_AND_PRIVACY.md) for the backup format and trust boundaries.
+The public installation is at **[fraware.github.io/verse](https://fraware.github.io/verse/)**. The repository's workflow builds and publishes to GitHub Pages once its checks pass. Under repository **Settings → Pages**, the publication source must be **GitHub Actions**.
 
-## Repository guide
+If you deploy another copy, configure the Vite base URL and GitHub Pages path appropriately. No poem backend is necessary for standalone, browser-local use.
 
-- [Architecture](docs/ARCHITECTURE.md) — boundaries, component structure, and technical trade-offs
-- [Testing](docs/TESTING.md) — checks, browser smoke cases, and validation limits
-- [Contributing](CONTRIBUTING.md) — change process and review criteria
-- [Security](SECURITY.md) — reporting and safe handling
-- [Dependency inventory](docs/DEPENDENCIES.md) — advisory evidence and build-tool risk
-- [Dependency audit issue](https://github.com/fraware/verse/issues/13) — inherited package advisories awaiting classification
+## Provenance and rights
 
-The source was migrated from the owner's private `verse-whisper-alchemy` project, at source commit `801efa918727e5fa805d616ea3f2ce7cc2b6d8f2`. The private source history, `.env`, and unused Lovable/Supabase integrations were excluded from this public repository.
+This source was migrated from the owner's private `verse-whisper-alchemy` project at commit `801efa918727e5fa805d616ea3f2ce7cc2b6d8f2`. Private history, credentials, and unused hosted integrations were excluded.
 
-## License
+**No license has been selected.** Public access to this repository does not grant permission to reuse or redistribute its source. Permission and licensing must be settled with the rights holder before incorporating the code into another project.
 
-No license has been selected. **Public source availability is not an open-source license.** Reuse and redistribution permissions should be settled by the rights holder before an external release under an open-source license.
+---
+
+<div align="center">
+  <sub>VERSE · A PLACE FOR WORDS TO FIND THEIR SHAPE</sub>
+</div>

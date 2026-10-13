@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Feather, Scroll, ArrowRight, Upload, Edit3 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { VerseMark } from "@/components/VerseMark";
 
 const Landing = () => {
   return (
@@ -18,9 +19,7 @@ const Landing = () => {
       <header className="relative z-10 px-6 py-6">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-literary-sage/10 rounded-full">
-              <Feather className="h-6 w-6 text-literary-sage" />
-            </div>
+            <VerseMark />
             <div>
               <h1 className="text-xl font-bold text-foreground">Verse</h1>
               <p className="text-xs text-muted-foreground italic">A companion for poets</p>
@@ -54,7 +53,7 @@ const Landing = () => {
               "The best words in the best order"
             </blockquote>
             <cite className="text-sm text-muted-foreground mt-2 block">
-              — Samuel Taylor Coleridge
+              Samuel Taylor Coleridge
             </cite>
           </div>
 
@@ -116,10 +115,10 @@ const Landing = () => {
       <footer className="relative z-10 mt-24 py-12 border-t border-muted bg-background/80 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <p className="text-sm text-muted-foreground font-literary italic mb-4">
-            "I dwell in possibility — a fairer house than prose"
+            "I dwell in Possibility"
           </p>
           <p className="text-xs text-muted-foreground">
-            — Emily Dickinson
+            Emily Dickinson
           </p>
         </div>
       </footer>

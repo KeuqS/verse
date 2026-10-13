@@ -24,8 +24,8 @@ const poetSuggestions: Record<string, Suggestion[]> = {
       id: '',
       type: 'meter',
       original_text: 'walking through the garden',
-      suggested_text: 'I walked — the Garden —',
-      explanation: "Dickinson's characteristic dashes and ballad meter",
+      suggested_text: 'I walked, the Garden, alone',
+      explanation: "A compact, measured line inspired by Dickinson's lyrical compression",
       status: 'pending'
     },
     {
@@ -78,7 +78,7 @@ const poetSuggestions: Record<string, Suggestion[]> = {
       id: '',
       type: 'tone',
       original_text: 'I remember my mother',
-      suggested_text: 'my mother—a body of water',
+      suggested_text: 'my mother, a body of water',
       explanation: "Vuong's intimate, embodied memory work",
       status: 'pending'
     },
