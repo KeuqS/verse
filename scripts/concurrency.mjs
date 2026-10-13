@@ -24,6 +24,30 @@ async function poems(page) {
   return page.evaluate(() => JSON.parse(localStorage.getItem("verse_poems") || "[]"));
 }
 
+/**
+ * Playwright's default waitForFunction uses requestAnimationFrame, which is
+ * suspended in background tabs in some browsers. Poll via the Node runner.
+ */
+async function waitFor(page, predicate, arg) {
+  const deadline = Date.now() + 15000;
+  let lastError = null;
+  while (Date.now() < deadline) {
+    try {
+      if (await page.evaluate(predicate, arg)) return;
+    } catch (error) {
+      lastError = String(error);
+    }
+    await new Promise(resolve => setTimeout(resolve, 150));
+  }
+  const diagnostic = await page.evaluate(async () => ({
+    records: JSON.parse(localStorage.getItem("verse_poems") || "[]").map(p => ({ id: p.id, title: p.title })),
+    locks: await navigator.locks.query(),
+    errors: [...document.querySelectorAll('[role="alert"]')].map(x => x.textContent),
+    toast: document.querySelector('[data-testid="verse-toast-viewport"]')?.textContent,
+  })).catch(error => ({ diagnosticError: String(error) }));
+  throw new Error(`Timed out waiting for storage or lock state: ${JSON.stringify(diagnostic)}, previous error: ${lastError}`);
+}
+
 try {
   const a = await pageAt();
   const b = await pageAt();
@@ -38,18 +62,18 @@ try {
       await new Promise(resolve => { window.__release = resolve; });
     });
   });
-  await a.waitForFunction(() => window.__ready);
+  await waitFor(a,() => window.__ready);
   await save(a, "First concurrent title", "First concurrent poem");
   await save(b, "Second concurrent title", "Second concurrent poem");
   // Dispatching a UI click does not guarantee its asynchronous handler has
   // actually queued the lock request, especially under WebKit scheduling.
-  await a.waitForFunction(async () => {
+  await waitFor(a,async () => {
     const snapshot = await navigator.locks.query();
     return snapshot.pending.filter(lock => lock.name === "verse:verse_poems:exclusive:v1").length >= 2;
   });
   assert.deepEqual(await poems(a), [], "No write is allowed while the shared lock is held");
   await a.evaluate(() => window.__release());
-  await a.waitForFunction(() => JSON.parse(localStorage.getItem("verse_poems") || "[]").length === 2);
+  await waitFor(a,() => JSON.parse(localStorage.getItem("verse_poems") || "[]").length === 2);
   const committed = await poems(a);
   assert.equal(committed.length, 2);
   assert.deepEqual(new Set(committed.map(p => p.content)), new Set(["First concurrent poem", "Second concurrent poem"]));
@@ -58,19 +82,19 @@ try {
   const id = committed.find(p => p.title === "First concurrent title").id;
   const editA = await pageAt("write?poem=" + encodeURIComponent(id));
   const editB = await pageAt("write?poem=" + encodeURIComponent(id));
-  await editA.waitForFunction(() => document.querySelector("#poem-content")?.value === "First concurrent poem");
-  await editB.waitForFunction(() => document.querySelector("#poem-content")?.value === "First concurrent poem");
+  await waitFor(editA,() => document.querySelector("#poem-content")?.value === "First concurrent poem");
+  await waitFor(editB,() => document.querySelector("#poem-content")?.value === "First concurrent poem");
 
   await editA.getByLabel("Poem", { exact: true }).fill("Author A's final revision");
   await editB.getByLabel("Poem", { exact: true }).fill("Author B's independent revision");
   await editA.getByRole("button", { name: "Save poem" }).click();
-  await editA.waitForFunction(id => JSON.parse(localStorage.getItem("verse_poems") || "[]").some(p => p.id === id && p.content === "Author A's final revision"), id);
+  await waitFor(editA,id => JSON.parse(localStorage.getItem("verse_poems") || "[]").some(p => p.id === id && p.content === "Author A's final revision"), id);
   await editB.getByRole("button", { name: "Save poem" }).click();
   await editB.getByRole("button", { name: "Save a separate copy" }).waitFor();
   assert.equal(await editB.getByLabel("Poem", { exact: true }).inputValue(), "Author B's independent revision");
   assert.equal((await poems(editB)).find(p => p.id === id).content, "Author A's final revision");
   await editB.getByRole("button", { name: "Save a separate copy" }).click();
-  await editB.waitForFunction(() => JSON.parse(localStorage.getItem("verse_poems") || "[]").some(p => p.content === "Author B's independent revision"));
+  await waitFor(editB,() => JSON.parse(localStorage.getItem("verse_poems") || "[]").some(p => p.content === "Author B's independent revision"));
   const resolved = await poems(editB);
   assert.equal(resolved.length, 3);
   assert.equal(resolved.find(p => p.id === id).content, "Author A's final revision");
@@ -85,7 +109,7 @@ try {
       await new Promise(resolve => { window.__release = resolve; });
     });
   });
-  await a.waitForFunction(() => window.__ready);
+  await waitFor(a,() => window.__ready);
   const one = { id: "imported-concurrent", title: "Imported", content: "Imported text", is_public: false,
     created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
   const backup = JSON.stringify({ schemaVersion: 1, exportedAt: new Date().toISOString(), poems: [one] });
@@ -94,20 +118,20 @@ try {
   });
   // File.text() resolves asynchronously, and event dispatch does not establish
   // that importPoems has reached the lock. Wait for its queued request first.
-  await a.waitForFunction(async () => {
+  await waitFor(a,async () => {
     const snapshot = await navigator.locks.query();
     return snapshot.pending.some(lock => lock.name === "verse:verse_poems:exclusive:v1");
   });
   await save(creator, "New while restoring", "New poem while restoring");
   // Both operations must be queued BEFORE unlocking; no timing assumption.
-  await a.waitForFunction(async () => {
+  await waitFor(a,async () => {
     const snapshot = await navigator.locks.query();
     return snapshot.pending.filter(lock => lock.name === "verse:verse_poems:exclusive:v1").length >= 2;
   });
   await a.evaluate(() => window.__release());
   await importer.getByText("Backup restored").first().waitFor();
-  await creator.waitForFunction(() => JSON.parse(localStorage.getItem("verse_poems") || "[]").some(p => p.content === "New poem while restoring"));
-  await importer.waitForFunction(() => JSON.parse(localStorage.getItem("verse_poems") || "[]").some(p => p.id === "imported-concurrent"));
+  await waitFor(creator,() => JSON.parse(localStorage.getItem("verse_poems") || "[]").some(p => p.content === "New poem while restoring"));
+  await waitFor(importer,() => JSON.parse(localStorage.getItem("verse_poems") || "[]").some(p => p.id === "imported-concurrent"));
   const both = await poems(creator);
   assert.equal(both.length, 5, "Merge-only restore and concurrent save must preserve all five poems");
 
