@@ -16,7 +16,7 @@ if (!html.includes(`${base}assets/verse-mark.jpg`)) {
 if (!existsSync(join(outputDir, 'assets', 'verse-mark.jpg'))) {
   throw new Error('Missing original Verse artwork');
 }
-const references = [...html.matchAll(/(?:src|href)="(\\/[^"]+\\.(?:js|css))"/g)].map(match => match[1]);
+const references = [...html.matchAll(/(?:src|href)="(\/[^"]+\.(?:js|css))"/g)].map(match => match[1]);
 if (!references.some(path => path.endsWith('.js')) || !references.some(path => path.endsWith('.css'))) {
   throw new Error('Expected linked JavaScript and stylesheet in index.html');
 }
