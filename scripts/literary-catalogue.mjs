@@ -31,7 +31,7 @@ try {
   await page.getByLabel("Poem", { exact: true }).fill("very sadness");
   await page.getByRole("button", { name: "Show examples" }).click();
   await page.getByText("No examples match an exact phrase").waitFor();
-  assert.equal(await page.getByRole("button", { name: "Apply to draft", exact: true }).filter({ hasNot: page.locator("[disabled]") }).count(), 0);
+  assert.equal(await page.getByRole("button", { name: "Apply to draft", exact: true }).evaluateAll(buttons => buttons.every(button => button.disabled)), true);
 
   await page.getByLabel("Poem", { exact: true }).fill("very sad");
   await page.getByRole("button", { name: "Show examples" }).click();
