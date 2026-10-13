@@ -31,6 +31,7 @@ try {
   await page.getByLabel("Poem", { exact: true }).fill("very sadness");
   await page.getByRole("button", { name: "Show examples" }).click();
   await page.getByText("No examples match an exact phrase").waitFor();
+  assert.equal(await page.getByRole("button", { name: "Apply to draft", exact: true }).count(), 3);
   assert.equal(await page.getByRole("button", { name: "Apply to draft", exact: true }).evaluateAll(buttons => buttons.every(button => button.disabled)), true);
 
   await page.getByLabel("Poem", { exact: true }).fill("very sad");
@@ -44,6 +45,7 @@ try {
     await page.getByRole("option", { name: new RegExp(name) }).click();
     await page.getByLabel("Poem", { exact: true }).fill(source);
     await page.getByRole("button", { name: "Show examples" }).click();
+    await page.getByText(replacement, { exact: true }).waitFor();
     await page.getByText("1 matching example available").waitFor();
     await page.getByRole("button", { name: "Apply to draft", exact: true }).first().click();
     assert.equal(await page.getByLabel("Poem", { exact: true }).inputValue(), replacement, name);
