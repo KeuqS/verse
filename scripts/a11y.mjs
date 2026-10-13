@@ -16,7 +16,7 @@ try {
     // axe injects code for testing; normal browser smoke tests keep CSP enforced.
     page.on("dialog", dialog => dialog.accept());
 
-    for (const route of ["/", "/write", "/collection"]) {
+    for (const route of ["/", "/write", "/collection", "/study"]) {
       if (route === "/collection") {
         await page.goto(root + "write");
         await page.locator("#poem-title").fill("Accessibility Test Poem");
