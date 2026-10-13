@@ -1,95 +1,67 @@
-import { useCallback, useEffect, useState } from "react";
-import { Poem, POEMS_KEY, readPoems, writePoems, mergePoems } from "@/lib/poems";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { Poem } from "@/lib/poems";
+import {
+  POEMS_CHANNEL, listPoems, addPoem, changePoem, removePoem, importPoemBackup,
+} from "@/lib/poemStore";
 export type { Poem } from "@/lib/poems";
 
-interface Snapshot { poems: Poem[]; error: string | null }
-
-function initialSnapshot(): Snapshot {
-  try {
-    return { poems: readPoems(), error: null };
-  } catch (error) {
-    return { poems: [], error: error instanceof Error ? error.message : "Cannot access browser storage." };
-  }
-}
+interface Snapshot { poems: Poem[]; error: string | null; loading: boolean }
 
 export function useLocalPoems() {
-  const [state, setState] = useState<Snapshot>(initialSnapshot);
+  const [state, setState] = useState<Snapshot>({ poems: [], error: null, loading: true });
+  const refreshEpoch = useRef(0);
 
-  const refetch = useCallback(() => setState(initialSnapshot()), []);
+  const refetch = useCallback(async () => {
+    const epoch = ++refreshEpoch.current;
+    try {
+      const poems = await listPoems();
+      if (epoch === refreshEpoch.current) setState({ poems, error: null, loading: false });
+    } catch (cause) {
+      if (epoch === refreshEpoch.current) {
+        setState(previous => ({
+          poems: previous.poems,
+          loading: false,
+          error: cause instanceof Error ? cause.message : "Cannot read browser database.",
+        }));
+      }
+    }
+  }, []);
 
   useEffect(() => {
-    const onStorage = (event: StorageEvent) => {
-      if (event.key === POEMS_KEY || event.key === null) refetch();
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    void refetch();
+    if (typeof BroadcastChannel === "undefined") return;
+    const channel = new BroadcastChannel(POEMS_CHANNEL);
+    channel.onmessage = () => { void refetch(); };
+    return () => { channel.close(); refreshEpoch.current += 1; };
   }, [refetch]);
 
-  const persist = (poems: Poem[]): boolean => {
+  const apply = async <T,>(operation: () => Promise<T>): Promise<T> => {
     try {
-      writePoems(poems);
-      setState({ poems, error: null });
-      return true;
-    } catch (error) {
-      setState(previous => ({ ...previous, error: error instanceof Error ? error.message : "Cannot save to browser storage." }));
-      return false;
+      const result = await operation();
+      await refetch();
+      return result;
+    } catch (cause) {
+      setState(previous => ({
+        ...previous,
+        error: cause instanceof Error ? cause.message : "Cannot save to browser database.",
+        loading: false,
+      }));
+      throw cause;
     }
-  };
-
-  const savePoem = async (title: string, content: string, selectedPoet?: string): Promise<Poem | null> => {
-    if (!content.trim()) return null;
-    try {
-      const previous = readPoems();
-      const now = new Date().toISOString();
-      const poem: Poem = {
-        id: crypto.randomUUID(),
-        title: title.trim() || "Untitled Poem",
-        content,
-        selected_poet: selectedPoet || undefined,
-        is_public: false,
-        created_at: now,
-        updated_at: now,
-      };
-      return persist([poem, ...previous]) ? poem : null;
-    } catch (error) {
-      setState(previous => ({ ...previous, error: String(error) }));
-      return null;
-    }
-  };
-
-  const updatePoem = async (id: string, changes: Partial<Pick<Poem, "title" | "content" | "selected_poet">>): Promise<boolean> => {
-    try {
-      const previous = readPoems();
-      if (!previous.some(poem => poem.id === id)) return false;
-      return persist(previous.map(poem => poem.id === id
-        ? { ...poem, ...changes, updated_at: new Date().toISOString() }
-        : poem));
-    } catch (error) {
-      setState(previous => ({ ...previous, error: String(error) }));
-      return false;
-    }
-  };
-
-  const deletePoem = async (id: string): Promise<boolean> => {
-    try {
-      const previous = readPoems();
-      if (!previous.some(poem => poem.id === id)) return false;
-      return persist(previous.filter(poem => poem.id !== id));
-    } catch (error) {
-      setState(previous => ({ ...previous, error: String(error) }));
-      return false;
-    }
-  };
-
-  const importPoems = (incoming: Poem[]): number => {
-    const previous = readPoems();
-    const merged = mergePoems(previous, incoming);
-    if (!persist(merged)) throw new Error("Could not save imported poems in this browser.");
-    return merged.length - previous.length;
   };
 
   return {
-    poems: state.poems, error: state.error, loading: false,
-    savePoem, updatePoem, deletePoem, importPoems, refetch,
+    poems: state.poems,
+    error: state.error,
+    loading: state.loading,
+    savePoem: (title: string, content: string, selectedPoet?: string) =>
+      apply(() => addPoem(title, content, selectedPoet)),
+    updatePoem: (id: string, changes: Partial<Pick<Poem, "title" | "content" | "selected_poet">>, expected: Poem) =>
+      apply(() => changePoem(id, changes, expected)),
+    deletePoem: (id: string, expected: Poem) =>
+      apply(() => removePoem(id, expected)),
+    importPoems: (incoming: Poem[]) =>
+      apply(() => importPoemBackup(incoming)),
+    refetch,
   };
 }
