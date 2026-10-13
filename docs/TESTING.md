@@ -7,9 +7,10 @@
 3. **Build boundary** — `GITHUB_PAGES=true npm run build && GITHUB_PAGES=true npm run verify:dist` checks the Pages asset base and output presence.
 4. **Privacy isolation** — each browser engine tests two independent profiles, reload persistence, explicit outbound sharing consent, denied local storage, and absence of third-party network calls during ordinary use.
 5. **IndexedDB transaction and migration checks** — `scripts/concurrency.mjs` exercises simultaneous writes from multiple tabs, stale edit conflicts, overlapping backup imports, non-destructive legacy localStorage migration, malformed legacy data, and blocked IndexedDB in three browser engines.
-6. **Browser workflows** — the Playwright smoke script exercises the editor, collection, save/update, backup export/restore, import and suggestions in Chromium, Firefox and WebKit. Screenshots are CI artifacts.
-7. **Automated accessibility** — axe-core checks WCAG 2.0/2.1 A and AA rules for the landing, writing, and collection pages at desktop and mobile widths. The results are saved as CI artifacts; this does not replace expert screen-reader or keyboard testing.
-8. **Deployment** — a successful, validation-gated Pages publish job plus HTTP/browser verification at the project URL.
+6. **Visual regression contract** — `scripts/style-regression.mjs` verifies typography, 375px and 1440px responsive styling, writing-grid rendering and toast animations in three browser engines.
+7. **Browser workflows** — the Playwright smoke script exercises the editor, collection, save/update, backup export/restore, import and suggestions in Chromium, Firefox and WebKit. Screenshots are CI artifacts.
+8. **Automated accessibility** — axe-core checks WCAG 2.0/2.1 A and AA rules for the landing, writing, and collection pages at desktop and mobile widths. The results are saved as CI artifacts; this does not replace expert screen-reader or keyboard testing.
+9. **Deployment** — a successful, validation-gated Pages publish job plus HTTP/browser verification at the project URL.
 
 A passing typecheck is not a substitute for interaction testing. Browser smoke tests verify a small representative path, not exhaustive platform, mobile, or accessibility coverage.
 
@@ -20,6 +21,7 @@ npm ci
 npm run typecheck
 npm run lint
 npm run test:unit
+npm audit --audit-level=moderate
 GITHUB_PAGES=true npm run build
 GITHUB_PAGES=true npm run verify:dist
 ```

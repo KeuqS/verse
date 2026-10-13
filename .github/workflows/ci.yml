@@ -26,8 +26,8 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run test:unit
-      - name: Block known production advisories
-        run: npm audit --omit=dev --audit-level=moderate
+      - name: Block runtime and build dependency advisories
+        run: npm audit --audit-level=moderate
       - run: npm run build
       - run: npm run verify:dist
 
@@ -57,6 +57,7 @@ jobs:
             VERSE_BROWSER="$browser" node scripts/smoke.mjs
             VERSE_BROWSER="$browser" node scripts/privacy.mjs
             VERSE_BROWSER="$browser" node scripts/concurrency.mjs
+            VERSE_BROWSER="$browser" node scripts/style-regression.mjs
           done
       - name: Upload screenshots
         if: always()
