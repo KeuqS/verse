@@ -6,17 +6,11 @@
 
 </div>
 
----
-
-## A quiet place for poetry
-
 Verse is a place to draft, revise, and collect poems without handing them to a cloud service. Its typography, warm parchment palette, and considered spacing draw from the printed page. The interface is intentionally small, leaving room for the writing itself.
 
 | **Compose** | **Explore** | **Keep** |
 | :--- | :--- | :--- |
 | Write and title poems in a focused editor. Save a new work or revise an existing one. | Explore curated literary examples, then select an original passage to preview local echo, isolation, or omission experiments. Changes always require an explicit click. | Organize a personal collection, revisit earlier writing, import plain text, and carry your work away in a JSON backup. |
-
-> **On literary examples.** The examples are static, curated substitutions. Verse does not analyze a poem with a language model, evaluate its literary quality, or send drafts to a hosted inference service.
 
 ## Your words, in your browser
 
@@ -97,8 +91,3 @@ This source was migrated from the owner's private `verse-whisper-alchemy` projec
 
 **No license has been selected.** Public access to this repository does not grant permission to reuse or redistribute its source. Permission and licensing must be settled with the rights holder before incorporating the code into another project.
 
----
-
-<div align="center">
-  <sub>VERSE · A PLACE FOR WORDS TO FIND THEIR SHAPE</sub>
-</div>
