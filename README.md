@@ -41,7 +41,7 @@ Open the address printed by Vite (normally `http://localhost:5173/`).
 | `npm run verify:dist` | Verify static build output |
 | `npm run preview` | Preview the compiled site |
 
-The [CI workflow](.github/workflows/ci.yml) runs static checks and a browser-based smoke suite for core workflows.
+The [CI workflow](.github/workflows/ci.yml) runs static checks and a Chromium/Firefox/WebKit smoke suite and automated accessibility checks for core workflows.
 
 ## Deployment
 

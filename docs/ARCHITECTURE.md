@@ -25,7 +25,7 @@ Deployment: GitHub Actions → GitHub Pages /verse/
 
 | Path | Responsibility |
 | --- | --- |
-| `src/App.tsx` | Page routing, providers, SPA base URL |
+| `src/App.tsx` | Browser routing, toast notifications, SPA base URL |
 | `src/pages/Index.tsx` | Unsaved editor state and save/update orchestration |
 | `src/pages/Collection.tsx` | Collection management, backup exchange, accessible selection |
 | `src/hooks/useLocalPoems.ts` | Storage hook, cross-tab updates, success/error reporting |

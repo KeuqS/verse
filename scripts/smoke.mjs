@@ -1,9 +1,12 @@
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
-import { chromium } from "playwright";
+import { chromium, firefox, webkit } from "playwright";
 
 const root = "http://127.0.0.1:4173/verse/";
-const browser = await chromium.launch({ headless: true });
+const engine = process.env.VERSE_BROWSER || "chromium";
+const types = { chromium, firefox, webkit };
+if (!(engine in types)) throw new Error(`Unsupported browser: ${engine}`);
+const browser = await types[engine].launch({ headless: true });
 const context = await browser.newContext({
   viewport: { width: 1280, height: 850 },
   acceptDownloads: true,
@@ -20,7 +23,7 @@ page.on("response", response => {
   if (response.status() >= 400) console.error("HTTP_ERROR", response.status(), response.url());
 });
 
-const screenshots = "test-artifacts";
+const screenshots = `test-artifacts/${engine}`;
 await mkdir(screenshots, { recursive: true });
 page.on("dialog", dialog => dialog.accept());
 
@@ -95,7 +98,7 @@ try {
 
   await navigate(`${root}collection`);
   await page.getByRole("heading", { name: "My Collection" }).waitFor();
-  console.log("PASS: routes, editing, save/update, examples, export/restore, text import");
+  console.log(`PASS (${engine}): routes, editing, save/update, examples, export/restore, text import`);
 } catch (error) {
   await page.screenshot({ path: `${screenshots}/failure.png`, fullPage: true });
   throw error;
