@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -105,13 +104,9 @@ interface PoetSelectorProps {
 }
 
 export const PoetSelector = ({ selectedPoet, onPoetSelect }: PoetSelectorProps) => {
-  const [selectedPoetData, setSelectedPoetData] = useState<Poet | undefined>(
-    poets.find(p => p.id === selectedPoet)
-  );
+  const selectedPoetData = poets.find(p => p.id === selectedPoet);
 
   const handlePoetSelect = (poetId: string) => {
-    const poet = poets.find(p => p.id === poetId);
-    setSelectedPoetData(poet);
     onPoetSelect(poetId);
   };
 
@@ -125,7 +120,7 @@ export const PoetSelector = ({ selectedPoet, onPoetSelect }: PoetSelectorProps) 
       </CardHeader>
       <CardContent className="space-y-4">
         <Select value={selectedPoet} onValueChange={handlePoetSelect}>
-          <SelectTrigger className="font-literary bg-background/50 border-muted">
+          <SelectTrigger aria-label="Literary influence" className="font-literary bg-background/50 border-muted">
             <SelectValue placeholder="Choose a poetic voice..." />
           </SelectTrigger>
           <SelectContent className="bg-card border-muted">

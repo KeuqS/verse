@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Feather, FilePlus2, Scroll } from "lucide-react";
 import { WritingCanvas } from "@/components/WritingCanvas";
 import { PoetSelector } from "@/components/PoetSelector";
 import { SuggestionsPanel } from "@/components/SuggestionsPanel";
@@ -9,218 +10,149 @@ import { CollectionLink } from "@/components/CollectionLink";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Feather, Scroll } from "lucide-react";
 import { useLocalPoems } from "@/hooks/useLocalPoems";
 import { useLocalSuggestions } from "@/hooks/useLocalSuggestions";
 import { useToast } from "@/hooks/use-toast";
 
-const Index = () => {
+export default function Index() {
   const [content, setContent] = useState("");
-  const [selectedPoet, setSelectedPoet] = useState<string>("");
+  const [selectedPoet, setSelectedPoet] = useState("");
   const [title, setTitle] = useState("Untitled Poem");
   const [currentPoemId, setCurrentPoemId] = useState<string | null>(null);
-  
-  const { savePoem, updatePoem } = useLocalPoems();
-  const { suggestions, loading: suggestionsLoading, generateSuggestions, acceptSuggestion, rejectSuggestion, remixSuggestion } = useLocalSuggestions();
+  const [dirty, setDirty] = useState(false);
+  const loadedId = useRef<string | null>(null);
+  const { poems, error: storageError, savePoem, updatePoem } = useLocalPoems();
+  const { suggestions, generateSuggestions, acceptSuggestion, rejectSuggestion, clearSuggestions } = useLocalSuggestions();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const requestedPoem = searchParams.get("poem");
 
-  const handleTextImport = (text: string) => {
+  useEffect(() => {
+    if (!requestedPoem || loadedId.current === requestedPoem) return;
+    const poem = poems.find(item => item.id === requestedPoem);
+    if (!poem) return;
+    loadedId.current = poem.id;
+    setCurrentPoemId(poem.id);
+    setContent(poem.content);
+    setTitle(poem.title);
+    setSelectedPoet(poem.selected_poet || "");
+    setDirty(false);
+    clearSuggestions();
+  }, [requestedPoem, poems, clearSuggestions]); // The loaded ID prevents reloading over unsaved edits.
+
+  const changeContent = (text: string) => {
     setContent(text);
-    setCurrentPoemId(null);
+    setDirty(true);
+    clearSuggestions();
   };
 
-  const handleSavePoem = async (): Promise<boolean> => {
+  const changePoet = (poet: string) => {
+    setSelectedPoet(poet);
+    setDirty(true);
+    clearSuggestions();
+  };
+
+  const resetDraft = () => {
+    loadedId.current = null;
+    setContent("");
+    setTitle("Untitled Poem");
+    setSelectedPoet("");
+    setCurrentPoemId(null);
+    setDirty(false);
+    clearSuggestions();
+    navigate("/write", { replace: true });
+  };
+
+  const save = async (): Promise<boolean> => {
     if (!content.trim()) {
-      toast({ title: "Nothing to save", description: "Write a poem before saving.", variant: "destructive" });
+      toast({ title: "Nothing to save", description: "Write some text first.", variant: "destructive" });
       return false;
     }
-
     try {
       if (currentPoemId) {
-        const updated = await updatePoem(currentPoemId, {
-          title, content, selected_poet: selectedPoet
-        });
-        if (!updated) throw new Error("Unable to update poem");
+        if (!(await updatePoem(currentPoemId, { title: title.trim() || "Untitled Poem", content, selected_poet: selectedPoet }))) {
+          throw new Error("Could not update the saved poem.");
+        }
       } else {
         const poem = await savePoem(title, content, selectedPoet);
-        if (!poem) throw new Error("Unable to save poem");
+        if (!poem) throw new Error("Could not store the new poem.");
         setCurrentPoemId(poem.id);
+        loadedId.current = poem.id;
       }
-      toast({ title: "Poem saved", description: "Saved in this browser's collection." });
+      setDirty(false);
+      toast({ title: "Poem saved", description: "Stored in this browser. Export a backup from My Collection." });
       return true;
     } catch {
-      toast({ title: "Save failed", description: "Browser storage may be unavailable or full. Copy your poem to a safe location.", variant: "destructive" });
+      toast({ title: "Save failed", description: "Check browser storage or export your text elsewhere.", variant: "destructive" });
       return false;
     }
   };
 
-  const handleGenerateSuggestions = async () => {
-    if (!content.trim()) {
-      toast({
-        title: "Nothing to analyze",
-        description: "Please write some content before getting suggestions.",
-        variant: "destructive"
-      });
+  const showExamples = async () => {
+    if (!content.trim()) return;
+    await generateSuggestions("", content, selectedPoet);
+  };
+
+  const applyExample = async (id: string) => {
+    const suggestion = suggestions.find(item => item.id === id && item.status === "pending");
+    if (!suggestion) return;
+    if (!content.includes(suggestion.original_text)) {
+      toast({ title: "Example does not match", description: "The source phrase does not occur in your draft.", variant: "destructive" });
       return;
     }
-
-    // Save poem first if not already saved
-    let poemId = currentPoemId;
-    if (!poemId) {
-      const poem = await savePoem(title, content, selectedPoet);
-      if (poem) {
-        poemId = poem.id;
-        setCurrentPoemId(poemId);
-      }
-    }
-
-    await generateSuggestions(poemId || '', content, selectedPoet);
-  };
-
-  const handleAcceptSuggestion = async (id: string) => {
-    const suggestion = suggestions.find(s => s.id === id);
-    if (suggestion && !content.includes(suggestion.original_text)) {
-      toast({ title: "Example does not match", description: "The source phrase is absent from your draft.", variant: "destructive" });
-      return;
-    }
-    if (suggestion) {
-      // Replace the original text with the suggested text
-      const newContent = content.replace(suggestion.original_text, suggestion.suggested_text);
-      setContent(newContent);
-      
-      // Update poem in storage if it exists
-      if (currentPoemId) {
-        await updatePoem(currentPoemId, {
-          title,
-          content: newContent,
-          selected_poet: selectedPoet
-        });
-      }
-    }
-    
-    const success = await acceptSuggestion(id);
-    if (success) {
-      toast({
-        title: "Suggestion accepted",
-        description: "Your text has been updated with the suggestion.",
-      });
-    }
-  };
-
-  const handleRejectSuggestion = async (id: string) => {
-    const success = await rejectSuggestion(id);
-    if (success) {
-      toast({
-        title: "Suggestion rejected",
-        description: "The suggestion has been dismissed.",
-      });
-    }
-  };
-
-  const handleRemixSuggestion = async (id: string) => {
-    await remixSuggestion(id, currentPoemId || '', content, selectedPoet);
-    toast({
-      title: "Generating variations",
-      description: "Creating new suggestions based on this one.",
-    });
+    const changed = content.replace(suggestion.original_text, suggestion.suggested_text);
+    setContent(changed);
+    setDirty(true);
+    await acceptSuggestion(id);
   };
 
   return (
     <div className="min-h-screen bg-background font-literary">
-      {/* Header */}
-      <header className="border-b border-muted bg-background/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-literary-sage/10 rounded-full">
-                <Feather className="h-6 w-6 text-literary-sage" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-foreground">Verse</h1>
-                <p className="text-sm text-muted-foreground italic">A companion for poets</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSavePoem}
-                className="font-literary"
-              >
-                Save Poem
-              </Button>
-              <CollectionLink />
-              <Badge variant="secondary" className="font-literary">
-                <Scroll className="h-3 w-3 mr-1" />
-                {currentPoemId ? "Saved" : "Draft"}
-              </Badge>
-            </div>
+      <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-full bg-literary-sage/10"><Feather className="h-6 w-6 text-literary-sage" /></div>
+            <div><h1 className="text-xl font-bold">Verse</h1><p className="text-xs text-muted-foreground">Your writing space</p></div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={resetDraft}><FilePlus2 className="mr-1 h-4 w-4" /> New</Button>
+            <Button variant="outline" size="sm" onClick={() => void save()}>Save poem</Button>
+            <CollectionLink />
+            <Badge variant="secondary"><Scroll className="h-3 w-3 mr-1" />
+              {!currentPoemId ? "Unsaved" : dirty ? "Modified" : "Saved"}
+            </Badge>
           </div>
         </div>
       </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {storageError && <div role="alert" className="mb-6 p-4 rounded border border-destructive text-destructive">{storageError}</div>}
+        {requestedPoem && !poems.some(poem => poem.id === requestedPoem) && !storageError && (
+          <p role="alert" className="mb-6 text-destructive">That poem is unavailable in this browser. You may start a new one.</p>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Writing Canvas - Takes up most space */}
           <div className="lg:col-span-2">
-            <Input
-              aria-label="Poem title"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              className="mb-4 bg-card/60 font-literary text-lg"
-              placeholder="Poem title"
-            />
-            <WritingCanvas
-              content={content}
-              onContentChange={setContent}
-              placeholder="In the quiet moments between words,
-poetry finds its voice...
-
-Begin here, let your thoughts flow freely."
-            />
+            <label className="block mb-2 text-sm font-medium" htmlFor="poem-title">Title</label>
+            <Input id="poem-title" value={title} onChange={event => { setTitle(event.target.value); setDirty(true); }}
+              className="mb-4 bg-card/60 text-lg" maxLength={200} />
+            <WritingCanvas content={content} onContentChange={changeContent}
+              placeholder={"Begin your verse here...\n\nYour words stay in this browser."} />
+            <p className="mt-3 text-sm text-muted-foreground">Save explicitly. Your work is not synchronized to another device.</p>
           </div>
-
-          {/* Sidebar with controls and suggestions */}
-          <div className="space-y-6">
-            <PoetSelector
-              selectedPoet={selectedPoet}
-              onPoetSelect={setSelectedPoet}
-            />
-            
-            <FileUpload onTextImport={handleTextImport} />
-            
-            <SuggestionsPanel
-              suggestions={suggestions}
-              selectedPoet={selectedPoet}
-              content={content}
-              loading={suggestionsLoading}
-              onGenerateSuggestions={handleGenerateSuggestions}
-              onAcceptSuggestion={handleAcceptSuggestion}
-              onRejectSuggestion={handleRejectSuggestion}
-              onRemixSuggestion={handleRemixSuggestion}
-            />
-            
-            <SharingPanel 
-              content={content} 
-              title={title}
-              onSavePoem={handleSavePoem}
-            />
-          </div>
+          <aside className="space-y-6" aria-label="Writing tools">
+            <PoetSelector selectedPoet={selectedPoet} onPoetSelect={changePoet} />
+            <FileUpload onTextImport={text => { setContent(text); setCurrentPoemId(null); loadedId.current = null; setDirty(true); clearSuggestions(); navigate("/write", { replace: true }); }}
+              initialOpen={searchParams.get("upload") === "true"} />
+            <SuggestionsPanel suggestions={suggestions} selectedPoet={selectedPoet} content={content}
+              onGenerateSuggestions={showExamples} onAcceptSuggestion={applyExample}
+              onRejectSuggestion={rejectSuggestion} />
+            <SharingPanel content={content} title={title} onSavePoem={save} />
+          </aside>
         </div>
       </main>
-
-      {/* Subtle footer */}
-      <footer className="mt-16 py-8 border-t border-muted bg-background/50">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <p className="text-sm text-muted-foreground font-literary italic">
-            "The best words in the best order" — Samuel Taylor Coleridge
-          </p>
-        </div>
+      <footer className="mt-12 py-8 border-t text-center text-sm text-muted-foreground">
+        Verse — a private, browser-based writing companion
       </footer>
     </div>
   );
-};
-
-export default Index;
+}

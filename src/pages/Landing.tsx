@@ -7,7 +7,7 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-background font-literary overflow-hidden">
       {/* Subtle background pattern */}
-      <div className="fixed inset-0 opacity-[0.02]">
+      <div className="pointer-events-none fixed inset-0 opacity-[0.02]">
         <div className="absolute inset-0" style={{
           backgroundImage: `radial-gradient(circle at 25% 25%, hsl(var(--literary-sage)) 2px, transparent 2px)`,
           backgroundSize: '60px 60px'
@@ -60,19 +60,15 @@ const Landing = () => {
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-            <Link to="/write">
-              <Button size="lg" className="font-literary text-base px-8 py-6 group">
-                <Edit3 className="h-5 w-5 mr-2 group-hover:translate-x-1 transition-transform" />
+            <Button asChild size="lg" className="font-literary text-base px-8 py-6 group">
+                <Link to="/write"><Edit3 className="h-5 w-5 mr-2 group-hover:translate-x-1 transition-transform" />
                 Begin Writing
-                <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" /></Link>
               </Button>
-            </Link>
-            <Link to="/write?upload=true">
-              <Button variant="outline" size="lg" className="font-literary text-base px-8 py-6 group">
-                <Upload className="h-5 w-5 mr-2 group-hover:-translate-y-1 transition-transform" />
-                Upload a Poem
+            <Button asChild variant="outline" size="lg" className="font-literary text-base px-8 py-6 group">
+                <Link to="/write?upload=true"><Upload className="h-5 w-5 mr-2 group-hover:-translate-y-1 transition-transform" />
+                Upload a Poem</Link>
               </Button>
-            </Link>
           </div>
 
           {/* Feature Highlights */}
@@ -103,7 +99,7 @@ const Landing = () => {
               </div>
               <h3 className="font-literary font-semibold text-lg mb-2 text-foreground">Your Voice</h3>
               <p className="text-muted-foreground font-literary">
-                Suggestions that inspire and extend, never overwrite your unique style
+                Example-based prompts you choose to apply, without automatic changes to your writing
               </p>
             </div>
           </div>

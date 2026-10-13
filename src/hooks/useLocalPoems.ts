@@ -1,95 +1,95 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Poem, POEMS_KEY, readPoems, writePoems, mergePoems } from "@/lib/poems";
+export type { Poem } from "@/lib/poems";
 
-export interface Poem {
-  id: string;
-  title: string;
-  content: string;
-  selected_poet?: string;
-  is_public: boolean;
-  created_at: string;
-  updated_at: string;
+interface Snapshot { poems: Poem[]; error: string | null }
+
+function initialSnapshot(): Snapshot {
+  try {
+    return { poems: readPoems(), error: null };
+  } catch (error) {
+    return { poems: [], error: error instanceof Error ? error.message : "Cannot access browser storage." };
+  }
 }
 
-const STORAGE_KEY = "verse_poems";
+export function useLocalPoems() {
+  const [state, setState] = useState<Snapshot>(initialSnapshot);
 
-export const useLocalPoems = () => {
-  const [poems, setPoems] = useState<Poem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const refetch = useCallback(() => setState(initialSnapshot()), []);
 
-  // Load poems from localStorage on mount
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setPoems(JSON.parse(stored));
-      } catch (e) {
-        console.error("Error parsing stored poems:", e);
-      }
-    }
-    setLoading(false);
-  }, []);
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === POEMS_KEY || event.key === null) refetch();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [refetch]);
 
-  // Save poems to localStorage whenever they change
-  const saveToStorage = (updatedPoems: Poem[]): boolean => {
+  const persist = (poems: Poem[]): boolean => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedPoems));
-      setPoems(updatedPoems);
+      writePoems(poems);
+      setState({ poems, error: null });
       return true;
     } catch (error) {
-      console.error("Cannot save poem data in this browser:", error);
+      setState(previous => ({ ...previous, error: error instanceof Error ? error.message : "Cannot save to browser storage." }));
       return false;
     }
   };
 
   const savePoem = async (title: string, content: string, selectedPoet?: string): Promise<Poem | null> => {
     if (!content.trim()) return null;
-
-    const newPoem: Poem = {
-      id: crypto.randomUUID(),
-      title: title || "Untitled Poem",
-      content,
-      selected_poet: selectedPoet,
-      is_public: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    const updatedPoems = [newPoem, ...poems];
-    return saveToStorage(updatedPoems) ? newPoem : null;
-  };
-
-  const updatePoem = async (id: string, updates: Partial<Poem>): Promise<boolean> => {
-    const updatedPoems = poems.map((poem) =>
-      poem.id === id
-        ? { ...poem, ...updates, updated_at: new Date().toISOString() }
-        : poem
-    );
-    return saveToStorage(updatedPoems);
-  };
-
-  const deletePoem = async (id: string): Promise<boolean> => {
-    const updatedPoems = poems.filter((poem) => poem.id !== id);
-    saveToStorage(updatedPoems);
-    return true;
-  };
-
-  const refetch = () => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setPoems(JSON.parse(stored));
-      } catch (e) {
-        console.error("Error parsing stored poems:", e);
-      }
+    try {
+      const previous = readPoems();
+      const now = new Date().toISOString();
+      const poem: Poem = {
+        id: crypto.randomUUID(),
+        title: title.trim() || "Untitled Poem",
+        content,
+        selected_poet: selectedPoet || undefined,
+        is_public: false,
+        created_at: now,
+        updated_at: now,
+      };
+      return persist([poem, ...previous]) ? poem : null;
+    } catch (error) {
+      setState(previous => ({ ...previous, error: String(error) }));
+      return null;
     }
   };
 
-  return {
-    poems,
-    loading,
-    savePoem,
-    updatePoem,
-    deletePoem,
-    refetch,
+  const updatePoem = async (id: string, changes: Partial<Pick<Poem, "title" | "content" | "selected_poet">>): Promise<boolean> => {
+    try {
+      const previous = readPoems();
+      if (!previous.some(poem => poem.id === id)) return false;
+      return persist(previous.map(poem => poem.id === id
+        ? { ...poem, ...changes, updated_at: new Date().toISOString() }
+        : poem));
+    } catch (error) {
+      setState(previous => ({ ...previous, error: String(error) }));
+      return false;
+    }
   };
-};
+
+  const deletePoem = async (id: string): Promise<boolean> => {
+    try {
+      const previous = readPoems();
+      if (!previous.some(poem => poem.id === id)) return false;
+      return persist(previous.filter(poem => poem.id !== id));
+    } catch (error) {
+      setState(previous => ({ ...previous, error: String(error) }));
+      return false;
+    }
+  };
+
+  const importPoems = (incoming: Poem[]): number => {
+    const previous = readPoems();
+    const merged = mergePoems(previous, incoming);
+    if (!persist(merged)) throw new Error("Could not save imported poems in this browser.");
+    return merged.length - previous.length;
+  };
+
+  return {
+    poems: state.poems, error: state.error, loading: false,
+    savePoem, updatePoem, deletePoem, importPoems, refetch,
+  };
+}
