@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
-    "verify:dist": "node scripts/verify-build.mjs"
+    "verify:dist": "node scripts/verify-build.mjs",
+    "test:unit": "node --experimental-strip-types --test src/lib/poems.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

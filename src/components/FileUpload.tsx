@@ -1,113 +1,76 @@
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Upload, FileText, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, FileText, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
-interface FileUploadProps {
+interface Props {
   onTextImport: (text: string) => void;
+  initialOpen?: boolean;
 }
 
-export const FileUpload = ({ onTextImport }: FileUploadProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [importedText, setImportedText] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
+const MAX_TEXT_SIZE = 1024 * 1024;
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+/** Imports UTF-8 plain text only. Existing drafts are replaced on explicit confirmation. */
+export function FileUpload({ onTextImport, initialOpen = false }: Props) {
+  const [expanded, setExpanded] = useState(initialOpen);
+  const [text, setText] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (!initialOpen) return;
+    const frame = requestAnimationFrame(() => buttonRef.current?.scrollIntoView({ block: "center", behavior: "smooth" }));
+    return () => cancelAnimationFrame(frame);
+  }, [initialOpen]);
+
+  async function handleFile(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
-    if (file && file.type === "text/plain") {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const text = e.target?.result as string;
-        setImportedText(text);
-        setIsExpanded(true);
-      };
-      reader.readAsText(file);
+    event.target.value = "";
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith(".txt") || file.size > MAX_TEXT_SIZE) {
+      toast({ title: "Invalid file", description: "Choose a .txt file smaller than 1 MB.", variant: "destructive" });
+      return;
     }
-  };
+    try {
+      setText(await file.text());
+      setExpanded(true);
+    } catch {
+      toast({ title: "Unable to read text file", variant: "destructive" });
+    }
+  }
 
-  const handleImport = () => {
-    if (importedText.trim()) {
-      onTextImport(importedText);
-      setImportedText("");
-      setIsExpanded(false);
-    }
-  };
-
-  const handleCancel = () => {
-    setImportedText("");
-    setIsExpanded(false);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
+  function importText() {
+    if (!text.trim()) return;
+    if (!window.confirm("Replace the current writing canvas with this imported text? Save your previous draft first.")) return;
+    onTextImport(text);
+    setText("");
+    setExpanded(false);
+  }
 
   return (
-    <Card className="bg-card/50 backdrop-blur-sm border-muted">
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-base font-literary text-foreground/80">
-          <FileText className="h-4 w-4 text-literary-gold" />
-          Import Existing Work
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {!isExpanded ? (
+    <Card className="bg-card/60 border-muted">
+      <CardHeader><CardTitle className="text-base font-literary flex gap-2 items-center">
+        <FileText className="h-4 w-4 text-literary-sage" /> Import existing work
+      </CardTitle></CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-sm text-muted-foreground">Open a UTF-8 .txt file (up to 1 MB). Text stays in your browser.</p>
+        {initialOpen && <p className="text-sm font-medium text-literary-sage">Choose a file below to begin importing.</p>}
+        <Button ref={buttonRef} variant="outline" className="w-full" onClick={() => inputRef.current?.click()}>
+          <Upload className="h-4 w-4 mr-2" /> Choose text file
+        </Button>
+        <input ref={inputRef} type="file" className="sr-only" accept=".txt,text/plain"
+          aria-label="Choose a plain text poem" onChange={handleFile} />
+        {expanded && text && (
           <div className="space-y-3">
-            <p className="text-sm text-muted-foreground font-literary italic">
-              Upload a text file to refine existing poetry through your chosen influence.
-            </p>
-            <Button
-              onClick={() => fileInputRef.current?.click()}
-              variant="outline"
-              className="w-full font-literary bg-background/50 hover:bg-background/80"
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              Choose File
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".txt"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium font-literary">Imported Text</span>
-              <Button
-                onClick={handleCancel}
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            <Textarea
-              value={importedText}
-              onChange={(e) => setImportedText(e.target.value)}
-              className={cn(
-                "min-h-[200px] resize-none font-literary text-sm leading-relaxed",
-                "bg-background/30 border-muted"
-              )}
-              placeholder="Your imported text will appear here..."
-            />
-            <div className="flex gap-2">
-              <Button
-                onClick={handleImport}
-                className="flex-1 font-literary bg-literary-sage hover:bg-literary-sage/90"
-              >
-                Import to Canvas
-              </Button>
-              <Button
-                onClick={handleCancel}
-                variant="outline"
-                className="font-literary"
-              >
-                Cancel
+            <Textarea aria-label="Imported text preview" value={text} onChange={event => setText(event.target.value)}
+              className="min-h-40 font-literary" />
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={importText} disabled={!text.trim()}>Use this text</Button>
+              <Button variant="ghost" onClick={() => { setExpanded(false); setText(""); }}>
+                <X className="h-4 w-4 mr-1" /> Cancel
               </Button>
             </div>
           </div>
@@ -115,4 +78,4 @@ export const FileUpload = ({ onTextImport }: FileUploadProps) => {
       </CardContent>
     </Card>
   );
-};
+}

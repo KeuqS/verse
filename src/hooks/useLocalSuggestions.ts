@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 export interface Suggestion {
   id: string;
@@ -6,7 +6,6 @@ export interface Suggestion {
   original_text: string;
   suggested_text: string;
   explanation: string;
-  confidence: number;
   status: 'pending' | 'accepted' | 'rejected';
 }
 
@@ -19,7 +18,6 @@ const poetSuggestions: Record<string, Suggestion[]> = {
       original_text: 'very sad',
       suggested_text: 'circumference of grief',
       explanation: "Dickinson's precise, geometric language for emotional states",
-      confidence: 0.88,
       status: 'pending'
     },
     {
@@ -28,7 +26,6 @@ const poetSuggestions: Record<string, Suggestion[]> = {
       original_text: 'walking through the garden',
       suggested_text: 'I walked — the Garden —',
       explanation: "Dickinson's characteristic dashes and ballad meter",
-      confidence: 0.82,
       status: 'pending'
     },
     {
@@ -37,7 +34,6 @@ const poetSuggestions: Record<string, Suggestion[]> = {
       original_text: 'death came',
       suggested_text: 'Death kindly stopped',
       explanation: "Dickinson's personification of abstract concepts",
-      confidence: 0.90,
       status: 'pending'
     }
   ],
@@ -48,7 +44,6 @@ const poetSuggestions: Record<string, Suggestion[]> = {
       original_text: 'the road splits',
       suggested_text: 'Two roads diverged',
       explanation: "Frost's contemplative, measured iambic rhythm",
-      confidence: 0.91,
       status: 'pending'
     },
     {
@@ -57,7 +52,6 @@ const poetSuggestions: Record<string, Suggestion[]> = {
       original_text: 'nature is beautiful',
       suggested_text: 'Nature\'s first green is gold',
       explanation: "Frost's deceptively simple observation of nature",
-      confidence: 0.87,
       status: 'pending'
     }
   ],
@@ -68,7 +62,6 @@ const poetSuggestions: Record<string, Suggestion[]> = {
       original_text: 'feeling angry',
       suggested_text: 'rage crystallizes',
       explanation: "Plath's precise, scientific imagery for intense emotion",
-      confidence: 0.84,
       status: 'pending'
     },
     {
@@ -77,7 +70,6 @@ const poetSuggestions: Record<string, Suggestion[]> = {
       original_text: 'dark thoughts',
       suggested_text: 'thoughts blacken like burnt paper',
       explanation: "Plath's unflinching, visceral metaphors",
-      confidence: 0.88,
       status: 'pending'
     }
   ],
@@ -88,7 +80,6 @@ const poetSuggestions: Record<string, Suggestion[]> = {
       original_text: 'I remember my mother',
       suggested_text: 'my mother—a body of water',
       explanation: "Vuong's intimate, embodied memory work",
-      confidence: 0.86,
       status: 'pending'
     },
     {
@@ -97,7 +88,6 @@ const poetSuggestions: Record<string, Suggestion[]> = {
       original_text: 'the past hurts',
       suggested_text: 'history opens like a wound',
       explanation: "Vuong's visceral approach to inherited trauma",
-      confidence: 0.89,
       status: 'pending'
     }
   ],
@@ -108,7 +98,6 @@ const poetSuggestions: Record<string, Suggestion[]> = {
       original_text: 'colors blend',
       suggested_text: 'vowels ignite in spectrum',
       explanation: "Rimbaud's synesthetic sensory experience",
-      confidence: 0.85,
       status: 'pending'
     },
     {
@@ -117,7 +106,6 @@ const poetSuggestions: Record<string, Suggestion[]> = {
       original_text: 'I want freedom',
       suggested_text: 'I is another',
       explanation: "Rimbaud's dissolution of the self",
-      confidence: 0.83,
       status: 'pending'
     }
   ],
@@ -128,7 +116,6 @@ const poetSuggestions: Record<string, Suggestion[]> = {
       original_text: 'trees are tall',
       suggested_text: 'trees counsel patience',
       explanation: "Oliver's gentle personification of nature",
-      confidence: 0.86,
       status: 'pending'
     },
     {
@@ -137,7 +124,6 @@ const poetSuggestions: Record<string, Suggestion[]> = {
       original_text: 'morning sun',
       suggested_text: "morning's first blessing",
       explanation: "Oliver's reverent language for natural phenomena",
-      confidence: 0.89,
       status: 'pending'
     }
   ]
@@ -150,7 +136,6 @@ const defaultSuggestions: Suggestion[] = [
     original_text: 'moonlight bright',
     suggested_text: "moonlight's sight",
     explanation: 'Creates internal rhyme and enhances visual imagery',
-    confidence: 0.85,
     status: 'pending'
   },
   {
@@ -159,7 +144,6 @@ const defaultSuggestions: Suggestion[] = [
     original_text: 'very sad',
     suggested_text: 'melancholy',
     explanation: 'More precise and poetic word choice',
-    confidence: 0.92,
     status: 'pending'
   },
   {
@@ -168,7 +152,6 @@ const defaultSuggestions: Suggestion[] = [
     original_text: 'beautiful morning light',
     suggested_text: "fair morning's golden light",
     explanation: 'Iambic pentameter with elevated diction',
-    confidence: 0.88,
     status: 'pending'
   }
 ];
@@ -180,9 +163,7 @@ export const useLocalSuggestions = () => {
   const generateSuggestions = async (_poemId: string, _content: string, selectedPoet?: string) => {
     setLoading(true);
     
-    // Simulate API delay for natural feel
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
+    // These are static literary examples; no generative model is invoked.
     // Get poet-specific or default suggestions
     const baseSuggestions = selectedPoet && poetSuggestions[selectedPoet]
       ? poetSuggestions[selectedPoet]
@@ -214,10 +195,7 @@ export const useLocalSuggestions = () => {
     return true;
   };
 
-  const remixSuggestion = async (_id: string, _poemId: string, _content: string, selectedPoet?: string) => {
-    // Generate new suggestions as a "remix"
-    return generateSuggestions(_poemId, _content, selectedPoet);
-  };
+  const clearSuggestions = useCallback(() => setSuggestions([]), []);
 
   return {
     suggestions,
@@ -225,6 +203,6 @@ export const useLocalSuggestions = () => {
     generateSuggestions,
     acceptSuggestion,
     rejectSuggestion,
-    remixSuggestion,
+    clearSuggestions,
   };
 };
