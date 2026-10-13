@@ -30,7 +30,7 @@ prune_one() {
     return
   fi
 
-  current_json="$(gh api "repos/${GITHUB_REPOSITORY}/branches/${name}" 2>/dev/null || true)"
+  current_json="$(gh api "repos/${GITHUB_REPOSITORY}/branches?per_page=100" | jq -c --arg name "$name" '.[] | select(.name == $name)')"
   if [[ -z "$current_json" ]]; then
     echo "Already removed: ${name}"
     return
@@ -77,7 +77,7 @@ prune_one() {
   fi
 
   # A final exact-SHA read guards against a branch advancing during validation.
-  latest_sha="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/${name}" --jq '.object.sha')"
+  latest_sha="$(gh api "repos/${GITHUB_REPOSITORY}/branches?per_page=100" | jq -r --arg name "$name" '.[] | select(.name == $name) | .commit.sha')"
   if [[ "$latest_sha" != "$expected_sha" ]]; then
     echo "::warning::Branch advanced before delete; retaining ${name}"
     skipped=$((skipped + 1))
@@ -108,7 +108,7 @@ done < <(jq -c '.branches[]' "$manifest")
 # Its SHA cannot be statically pinned in its own commit, so independently
 # validate its final head against its completed, just-merged PR.
 self_branch="release/bootstrap-versioned-releases-and-cleanup"
-self_json="$(gh api "repos/${GITHUB_REPOSITORY}/branches/${self_branch}" 2>/dev/null || true)"
+self_json="$(gh api "repos/${GITHUB_REPOSITORY}/branches?per_page=100" | jq -c --arg name "$self_branch" '.[] | select(.name == $name)')"
 if [[ -n "$self_json" ]]; then
   self_sha="$(jq -r '.commit.sha' <<< "$self_json")"
   self_protected="$(jq -r '.protected' <<< "$self_json")"
