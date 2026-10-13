@@ -74,7 +74,7 @@ const Landing = () => {
           <p className="max-w-2xl mx-auto mb-12 text-sm leading-relaxed text-muted-foreground">
             Your poems stay on this device, in this browser. There are no accounts or cloud backups.
             Save your drafts and regularly export a backup from My Collection. Clearing browser data
-            can permanently erase saved work.
+            can permanently erase saved work. Anyone using this same browser profile can access your saved poems.
           </p>
 
           {/* Feature Highlights */}

@@ -56,7 +56,7 @@ A custom domain needs corresponding GitHub Pages and DNS settings. No external p
 
 ## Privacy and data durability
 
-Poems are persisted in the current browser's `localStorage` under `verse_poems`; storage is **device/browser/origin-specific** and has no account sync. An unavailable, full, or damaged storage area prevents successful saves. Verse does not automatically upload poem contents to a server, and it self-hosts its fonts. Explicit external sharing transfers text to the chosen service, including through prefilled share URLs, before a post is published.
+Poems are persisted in the current browser's `localStorage` under `verse_poems`; storage is **device/browser-profile/origin-specific** and has no account sync. Anyone using the same browser profile can access its poems; use separate profiles for separate people. An unavailable, full, or damaged storage area prevents successful saves. Verse does not automatically upload poem contents to a server, and it self-hosts its fonts. Explicit external sharing transfers text to the chosen service, including through prefilled share URLs, before a post is published.
 
 **Export backups regularly.** Clearing browser data or changing the site's origin can make local content inaccessible. Restore accepts version-1 Verse JSON files, validates records, and preserves existing items if IDs conflict. It is not a full synchronization mechanism.
 

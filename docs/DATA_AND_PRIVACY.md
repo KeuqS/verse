@@ -35,6 +35,7 @@ The exported file contains all writing in plain text: protect it accordingly. Im
 - A public GitHub repository contains application source, **not users' poems**. Browser writing does not enter the GitHub repository.
 - Typography is bundled with the site using Fontsource packages; the application does not request Google Fonts at runtime. Crimson Text and IBM Plex Mono are OFL-1.1 fonts. Normal network metadata is shared with the static site host when loading application assets.
 - There is no built-in server account, database, or cloud backup.
+- Browser-local storage is not encrypted by Verse or protected by per-person logins. People sharing the same device **and browser profile** have access to the same saved poems. Use separate browser profiles or device accounts if you need separation.
 - A browser can deny storage or clipboard access, or storage can reach its quota. Save actions report failure.
 - Clearing site data, private browsing, or changing domain/origin can orphan prior poems. There is no migration from a previous Lovable domain unless its browser data is exported separately.
 - Browser storage is readable by JavaScript executing in this origin. Treat external scripts, dependency updates, and XSS prevention as privacy-critical.
