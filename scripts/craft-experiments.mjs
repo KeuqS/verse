@@ -15,9 +15,16 @@ try {
   await page.goto(root + "write");
   const editor = page.getByLabel("Poem", { exact: true });
 
+  // Exercise a real keyboard selection, not Playwright's DOM-only selectText.
+  async function selectCurrentLine() {
+    await editor.focus();
+    await editor.press("End");
+    await editor.press("Shift+Home");
+  }
+
   // Preview is a no-write operation: the poem stays unchanged until Apply.
   await editor.fill("Quiet river");
-  await editor.selectText();
+  await selectCurrentLine();
   await page.getByText("Selected passage", { exact: true }).waitFor();
   await page.getByRole("button", { name: "Preview echo" }).click();
   await page.getByRole("region", { name: "Craft experiment preview" }).waitFor();
@@ -32,7 +39,7 @@ try {
   assert.equal(await editor.inputValue(), "Quiet river");
 
   // The preview is invalidated if the writer changes the source.
-  await editor.selectText();
+  await selectCurrentLine();
   await page.getByRole("button", { name: "Preview echo" }).click();
   await page.getByRole("region", { name: "Craft experiment preview" }).waitFor();
   await editor.fill("Quiet river changed");
@@ -41,7 +48,7 @@ try {
   assert.equal(await page.getByRole("button", { name: "Undo experiment" }).count(), 0);
 
   // Whole-poem omission would create an unsavable empty document.
-  await editor.selectText();
+  await selectCurrentLine();
   await page.getByRole("button", { name: "Preview omit" }).click();
   assert.equal(await page.getByRole("region", { name: "Craft experiment preview" }).count(), 0);
   assert.equal(await editor.inputValue(), "Quiet river changed");
@@ -64,7 +71,7 @@ try {
   // A subsequent manual edit disables the earlier undo, preventing clobber.
   await editor.fill("New writing from the author");
   assert.equal(await page.getByRole("button", { name: "Undo experiment" }).count(), 0);
-  await editor.selectText();
+  await selectCurrentLine();
   await page.getByRole("button", { name: "Preview echo" }).click();
   await page.getByRole("button", { name: "Apply preview to draft" }).click();
   await page.getByRole("button", { name: "Save poem" }).click();
