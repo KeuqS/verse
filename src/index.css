@@ -1,6 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
 
@@ -115,4 +115,20 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Native toast motion replaces the legacy tailwindcss-animate build dependency. */
+@keyframes verse-toast-enter {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes verse-toast-exit {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(100%); }
+}
+.verse-toast[data-state="open"] { animation: verse-toast-enter 180ms ease-out both; }
+.verse-toast[data-state="closed"], .verse-toast[data-swipe="end"] { animation: verse-toast-exit 140ms ease-in both; }
+.verse-toast[data-swipe="move"], .verse-toast[data-swipe="cancel"] { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .verse-toast[data-state] { animation: none; }
 }
