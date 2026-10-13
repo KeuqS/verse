@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { chromium, firefox, webkit } from "playwright";
+import { poemsIn } from "./browser-db.mjs";
 
 // Privacy regression: independent browser profiles must never share saved poems.
 // The sole permitted network destination is the preview site's own origin.
@@ -33,14 +34,14 @@ try {
   await a.getByLabel("Poem", { exact: true }).fill(token);
   await a.getByRole("button", { name: "Save poem" }).click();
   await a.getByText("Saved", { exact: true }).first().waitFor();
-  const aData = await a.evaluate(() => JSON.parse(localStorage.getItem("verse_poems") || "[]"));
+  const aData = await poemsIn(a);
   assert.equal(aData.length, 1);
   assert.equal(aData[0].content, token);
 
   await b.goto(base + "collection");
   await b.getByText("Your collection is empty").waitFor();
-  const bData = await b.evaluate(() => localStorage.getItem("verse_poems"));
-  assert.equal(bData, null, "Second user's independent browser storage must be empty");
+  const bData = await poemsIn(b);
+  assert.deepEqual(bData, [], "Second user's independent browser database must be empty");
 
   await b.getByRole("button", { name: "Begin writing" }).click();
   await b.getByLabel("Title").fill("Bob's poem");
@@ -48,9 +49,9 @@ try {
   await b.getByRole("button", { name: "Save poem" }).click();
   await b.getByText("Saved", { exact: true }).first().waitFor();
   await a.reload();
-  assert.equal((await a.evaluate(() => JSON.parse(localStorage.getItem("verse_poems") || "[]"))).length, 1);
-  assert.equal((await a.evaluate(() => JSON.parse(localStorage.getItem("verse_poems") || "[]")))[0].content, token);
-  assert.equal((await b.evaluate(() => JSON.parse(localStorage.getItem("verse_poems") || "[]")))[0].title, "Bob's poem");
+  assert.equal((await poemsIn(a)).length, 1);
+  assert.equal((await poemsIn(a))[0].content, token);
+  assert.equal((await poemsIn(b))[0].title, "Bob's poem");
 
   // Restoring a local editor must not require any external network or accounts.
   await a.goto(base + "collection");
