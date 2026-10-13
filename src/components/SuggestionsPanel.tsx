@@ -2,6 +2,7 @@ import { Lightbulb, Check, X, BookOpen } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { findExampleMatch } from "@/lib/literaryExamples";
 import type { Suggestion } from "@/hooks/useLocalSuggestions";
 
 interface Props {
@@ -12,12 +13,16 @@ interface Props {
   onRejectSuggestion: (id: string) => void;
 }
 
-/** Static examples are illustrative; applying one changes only an exact matching phrase. */
+/** Craft examples are static; an exact standalone phrase is needed to apply one. */
 export function SuggestionsPanel({
   suggestions, content, onGenerateSuggestions, onAcceptSuggestion, onRejectSuggestion,
 }: Props) {
   const pending = suggestions.filter(item => item.status === "pending");
+  const applicable = pending.filter(item => findExampleMatch(content, item.original_text) !== null);
+  const illustrations = pending.filter(item => findExampleMatch(content, item.original_text) === null);
+  const ordered = [...applicable, ...illustrations];
   const hasContent = content.trim().length > 0;
+
   return (
     <Card className="bg-card/60 border-muted">
       <CardHeader>
@@ -27,15 +32,22 @@ export function SuggestionsPanel({
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Prewritten literary examples selected from a local catalogue.
-          They do not analyze your poem or use AI.
+          Browse prewritten craft exercises from a local catalogue. They do not analyze your
+          writing, imitate a poet, or use AI. Applying an example is always your choice.
         </p>
         <Button variant="outline" onClick={onGenerateSuggestions} disabled={!hasContent} className="w-full">
           <BookOpen className="h-4 w-4 mr-2" /> Show examples
         </Button>
         {!hasContent && <p className="text-sm italic text-muted-foreground">Start writing to explore examples.</p>}
-        {pending.map(suggestion => {
-          const applicable = content.includes(suggestion.original_text);
+        {pending.length > 0 && (
+          <p className="text-sm text-muted-foreground" role="status">
+            {applicable.length === 0
+              ? "No examples match an exact phrase in your draft. Browse them as illustrations."
+              : `${applicable.length} matching ${applicable.length === 1 ? "example" : "examples"} available. Other examples are illustrative only.`}
+          </p>
+        )}
+        {ordered.map(suggestion => {
+          const isApplicable = findExampleMatch(content, suggestion.original_text) !== null;
           return (
             <div key={suggestion.id} className="p-4 rounded-lg border border-muted bg-background/60 space-y-3">
               <Badge variant="secondary" className="capitalize">{suggestion.type}</Badge>
@@ -44,13 +56,15 @@ export function SuggestionsPanel({
                 <p><span className="text-muted-foreground">To:</span> <span className="font-medium text-literary-sage">{suggestion.suggested_text}</span></p>
               </div>
               <p className="text-xs text-muted-foreground italic">{suggestion.explanation}</p>
-              {!applicable && <p className="text-xs text-muted-foreground">Illustration only. This phrase is absent from your draft.</p>}
+              {!isApplicable && <p className="text-xs text-muted-foreground">Illustration only. This exact phrase is absent from your draft.</p>}
               <div className="flex gap-2">
-                <Button size="sm" onClick={() => onAcceptSuggestion(suggestion.id)} disabled={!applicable}>
+                <Button size="sm" onClick={() => onAcceptSuggestion(suggestion.id)} disabled={!isApplicable}>
                   <Check className="h-4 w-4 mr-1" /> Apply to draft
                 </Button>
                 <Button size="sm" variant="ghost" aria-label="Dismiss example"
-                  onClick={() => onRejectSuggestion(suggestion.id)}><X className="h-4 w-4" /></Button>
+                  onClick={() => onRejectSuggestion(suggestion.id)}>
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           );
