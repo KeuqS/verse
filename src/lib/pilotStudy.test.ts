@@ -109,7 +109,7 @@ test("analysis rejects unexpected fields, old versions and inconsistent assignme
     { ...valid, author: "PRIVATE WRITER" },
     { ...valid, schemaVersion: 2 },
     { ...valid, trials: valid.trials.slice(1) },
-    { ...valid, trials: valid.trials.map((x, i) => i === 0 ? { ...x, condition: "unaided" } : x) },
+    { ...valid, trials: valid.trials.map((x, i) => i === 0 ? { ...x, condition: "experiments" } : x) },
     { ...valid, trials: valid.trials.map((x, i) => i === 1 ? { ...x, text: "SECRET" } : x) },
   ];
   for (const item of malformed) {
