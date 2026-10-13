@@ -63,6 +63,7 @@ jobs:
             VERSE_BROWSER="$browser" node scripts/backup-freshness.mjs
             VERSE_BROWSER="$browser" node scripts/brand-regression.mjs
             VERSE_BROWSER="$browser" node scripts/editor-safety.mjs
+            VERSE_BROWSER="$browser" node scripts/literary-catalogue.mjs
           done
       - name: Upload screenshots
         if: always()
