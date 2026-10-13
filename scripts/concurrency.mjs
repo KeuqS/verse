@@ -41,6 +41,12 @@ try {
   await a.waitForFunction(() => window.__ready);
   await save(a, "First concurrent title", "First concurrent poem");
   await save(b, "Second concurrent title", "Second concurrent poem");
+  // Dispatching a UI click does not guarantee its asynchronous handler has
+  // actually queued the lock request, especially under WebKit scheduling.
+  await a.waitForFunction(async () => {
+    const snapshot = await navigator.locks.query();
+    return snapshot.pending.filter(lock => lock.name === "verse:verse_poems:exclusive:v1").length >= 2;
+  });
   assert.deepEqual(await poems(a), [], "No write is allowed while the shared lock is held");
   await a.evaluate(() => window.__release());
   await a.waitForFunction(() => JSON.parse(localStorage.getItem("verse_poems") || "[]").length === 2);
