@@ -2,7 +2,7 @@
 
 ## Design and execution model
 
-Verse is a client-only React 18 / TypeScript / Vite application. React Router handles three routes: `/` (landing), `/write` (editor), and `/collection` (saved documents). Tailwind CSS and shadcn/Radix primitives supply a restrained editorial interface. The deployed build consists of static HTML, CSS, assets, and JavaScript.
+Verse is a client-only React 18 / TypeScript / Vite application. React Router handles three routes: `/` (landing), `/write` (editor), and `/collection` (saved documents). Tailwind CSS 4 with a migrated legacy design theme, and shadcn/Radix primitives supply a restrained editorial interface. The deployed build consists of static HTML, CSS, assets, and JavaScript.
 
 ```text
 Browser
@@ -58,3 +58,7 @@ The template catalogue is intentionally narrow: it does not model meter, linguis
 ## Browser network boundary
 
 The production bundle self-hosts its typography using Fontsource. A Content Security Policy limits scripts, fonts, styles and connections to the static site's own origin (with inline styling needed for UI components). No poem is uploaded as part of drafting, save, import, export or suggestion use. Opening an external sharing destination requires confirmation and transfers the prefilled text to that destination even if publication is cancelled.
+
+## CSS build
+
+Tailwind CSS 4 runs through the Vite plugin and explicitly imports the project's TypeScript theme configuration via `@config`. The historical v3 animation plugin was removed. Toast motion uses first-party CSS keyframes and opts out under `prefers-reduced-motion`. The source remains on the static-site deployment path, without runtime CSS services.

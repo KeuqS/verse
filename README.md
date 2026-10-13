@@ -41,7 +41,7 @@ Open the address printed by Vite (normally `http://localhost:5173/`).
 | `npm run verify:dist` | Verify static build output |
 | `npm run preview` | Preview the compiled site |
 
-The [CI workflow](.github/workflows/ci.yml) runs static checks, production-dependency auditing, Chromium/Firefox/WebKit functional, privacy-isolation, and concurrent-tab data-integrity tests, and automated accessibility checks. Publication to GitHub Pages is gated on their success.
+The [CI workflow](.github/workflows/ci.yml) runs static checks, whole-lockfile dependency auditing, Chromium/Firefox/WebKit functional, privacy-isolation, concurrent-tab, and visual-theme regression tests, and automated accessibility checks. Publication to GitHub Pages is gated on their success.
 
 ## Deployment
 
