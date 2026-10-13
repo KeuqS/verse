@@ -1,21 +1,29 @@
 import { Toaster } from "@/components/ui/toaster";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Collection from "./pages/Collection";
 import NotFound from "./pages/NotFound";
 
-/** No API clients or unused global providers are necessary in the static app. */
+/**
+ * A data router supports React Router's official navigation blocker.
+ * Unsaved writing must be protected for links and browser Back/Forward.
+ */
+const router = createBrowserRouter(
+  [
+    { path: "/", element: <Landing /> },
+    { path: "/write", element: <Index /> },
+    { path: "/collection", element: <Collection /> },
+    { path: "*", element: <NotFound /> },
+  ],
+  { basename: import.meta.env.BASE_URL },
+);
+
 export default function App() {
   return (
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
+    <>
       <Toaster />
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/write" element={<Index />} />
-        <Route path="/collection" element={<Collection />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
+      <RouterProvider router={router} />
+    </>
   );
 }

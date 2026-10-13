@@ -9,7 +9,7 @@
 5. **IndexedDB transaction and migration checks** — `scripts/concurrency.mjs` exercises simultaneous writes from multiple tabs, stale edit conflicts, overlapping backup imports, non-destructive legacy localStorage migration, malformed legacy data, and blocked IndexedDB in three browser engines.
 6. **Backup freshness** — `scripts/backup-freshness.mjs` verifies that an export queries committed IndexedDB data even if a tab's in-memory collection is stale.
 7. **Visual regression contract** — `scripts/style-regression.mjs` verifies typography, 375px and 1440px responsive styling, writing-grid rendering and toast animations in three browser engines.
-8. **Browser workflows** — the Playwright smoke script exercises the editor, collection, save/update, backup export/restore, import and suggestions in Chromium, Firefox and WebKit. Screenshots are CI artifacts.
+8. **Browser workflows and draft safety** — the Playwright smoke script exercises the editor, collection, save/update, backup export/restore, import and suggestions in Chromium, Firefox and WebKit. The editor-safety script also checks browser Back, in-app navigation, title-only unsaved drafts, confirmed text imports, and edits made while a save completion is pending. Screenshots are CI artifacts.
 9. **Automated accessibility** — axe-core checks WCAG 2.0/2.1 A and AA rules for the landing, writing, and collection pages at desktop and mobile widths. The results are saved as CI artifacts; this does not replace expert screen-reader or keyboard testing.
 10. **Deployment** — a successful, validation-gated Pages publish job plus HTTP/browser verification at the project URL.
 
@@ -37,5 +37,6 @@ Check 375px and 1440px layouts, keyboard focus order, reduced-motion preferences
 
 - IndexedDB readwrite transactions serialize writes from up-to-date clients, with stale-record checks for edits and deletes. Older cached clients writing legacy localStorage do not participate in the database; refresh all tabs. Clearing site data or device loss can destroy local writing, making exported backups essential.
 - Text-influence examples are editorial suggestions, not model-generated analysis.
-- Dependabot updates and the outstanding dependency advisory triage require separate validation.
-- GitHub Pages must be enabled in repository Settings before publishing will succeed.
+- The build dependency advisories tracked in [issue #13](https://github.com/fraware/verse/issues/13) were resolved with the Tailwind CSS 4 migration. Each new dependency change still needs a fresh audit and browser review.
+- GitHub Pages has previously published successfully. Future publication depends on the repository's Pages configuration and passing all required CI jobs.
+- SPA route transitions are guarded using React Router's data-router blocker; full reloads and external navigation still rely on browser-managed `beforeunload` prompts, which browsers may suppress. Maintain an external backup of important work.

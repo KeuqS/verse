@@ -2,15 +2,13 @@ import { Button } from "@/components/ui/button";
 import { BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export const CollectionLink = ({ confirmUnsaved = false }: { confirmUnsaved?: boolean }) => {
+/** Navigation is guarded centrally by the writing editor's useBlocker hook. */
+export const CollectionLink = () => {
   const navigate = useNavigate();
-  
+
   return (
     <Button
-      onClick={() => {
-        if (confirmUnsaved && !window.confirm('Leave the editor and discard unsaved changes?')) return;
-        navigate('/collection');
-      }}
+      onClick={() => navigate("/collection")}
       variant="ghost"
       size="sm"
       className="font-literary text-muted-foreground hover:text-foreground"
