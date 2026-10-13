@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { SyntheticEvent } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -14,6 +15,19 @@ interface WritingCanvasProps {
 export const WritingCanvas = ({ content, onContentChange, onPassageSelect, placeholder }: WritingCanvasProps) => {
   const [isFocused, setIsFocused] = useState(false);
 
+  /** Capture native selections on both pointer release and keyboard navigation. */
+  const captureSelection = (event: SyntheticEvent<HTMLTextAreaElement>) => {
+    const field = event.currentTarget;
+    if (field.selectionEnd > field.selectionStart) {
+      onPassageSelect?.({
+        start: field.selectionStart,
+        end: field.selectionEnd,
+        text: field.value.slice(field.selectionStart, field.selectionEnd),
+        source: field.value,
+      });
+    }
+  };
+
   return (
     <Card className={cn(
       "border-none shadow-none bg-card/50 backdrop-blur-sm transition-all duration-300",
@@ -24,17 +38,9 @@ export const WritingCanvas = ({ content, onContentChange, onPassageSelect, place
           id="poem-content"
           value={content}
           onChange={(e) => onContentChange(e.target.value)}
-          onSelect={event => {
-            const field = event.currentTarget;
-            if (field.selectionEnd > field.selectionStart) {
-              onPassageSelect?.({
-                start: field.selectionStart,
-                end: field.selectionEnd,
-                text: field.value.slice(field.selectionStart, field.selectionEnd),
-                source: field.value,
-              });
-            }
-          }}
+          onSelect={captureSelection}
+          onMouseUp={captureSelection}
+          onKeyUp={captureSelection}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder={placeholder || "Begin your verse..."}
