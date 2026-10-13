@@ -6,11 +6,12 @@
 2. **Data contract** — `npm run test:unit` checks backup round trips, collision resolution, malformed inputs, storage failure, and duplicate IDs.
 3. **Build boundary** — `GITHUB_PAGES=true npm run build && GITHUB_PAGES=true npm run verify:dist` checks the Pages asset base and output presence.
 4. **Privacy isolation** — each browser engine tests two independent profiles, reload persistence, explicit outbound sharing consent, denied local storage, and absence of third-party network calls during ordinary use.
-5. **Backup freshness** — `scripts/backup-freshness.mjs` verifies an export reads the last committed IndexedDB snapshot even if a collection tab cannot receive BroadcastChannel updates and its React view is stale.
-6. **IndexedDB transaction and migration checks** — `scripts/concurrency.mjs` exercises simultaneous writes from multiple tabs, stale edit conflicts, overlapping backup imports, non-destructive legacy localStorage migration, malformed legacy data, and blocked IndexedDB in three browser engines.
-7. **Browser workflows** — the Playwright smoke script exercises the editor, collection, save/update, backup export/restore, import and suggestions in Chromium, Firefox and WebKit. Screenshots are CI artifacts.
-8. **Automated accessibility** — axe-core checks WCAG 2.0/2.1 A and AA rules for the landing, writing, and collection pages at desktop and mobile widths. The results are saved as CI artifacts; this does not replace expert screen-reader or keyboard testing.
-9. **Deployment** — a successful, validation-gated Pages publish job plus HTTP/browser verification at the project URL.
+5. **IndexedDB transaction and migration checks** — `scripts/concurrency.mjs` exercises simultaneous writes from multiple tabs, stale edit conflicts, overlapping backup imports, non-destructive legacy localStorage migration, malformed legacy data, and blocked IndexedDB in three browser engines.
+6. **Backup freshness** — `scripts/backup-freshness.mjs` verifies that an export queries committed IndexedDB data even if a tab's in-memory collection is stale.
+7. **Visual regression contract** — `scripts/style-regression.mjs` verifies typography, 375px and 1440px responsive styling, writing-grid rendering and toast animations in three browser engines.
+8. **Browser workflows** — the Playwright smoke script exercises the editor, collection, save/update, backup export/restore, import and suggestions in Chromium, Firefox and WebKit. Screenshots are CI artifacts.
+9. **Automated accessibility** — axe-core checks WCAG 2.0/2.1 A and AA rules for the landing, writing, and collection pages at desktop and mobile widths. The results are saved as CI artifacts; this does not replace expert screen-reader or keyboard testing.
+10. **Deployment** — a successful, validation-gated Pages publish job plus HTTP/browser verification at the project URL.
 
 A passing typecheck is not a substitute for interaction testing. Browser smoke tests verify a small representative path, not exhaustive platform, mobile, or accessibility coverage.
 
@@ -21,6 +22,7 @@ npm ci
 npm run typecheck
 npm run lint
 npm run test:unit
+npm audit --audit-level=moderate
 GITHUB_PAGES=true npm run build
 GITHUB_PAGES=true npm run verify:dist
 ```

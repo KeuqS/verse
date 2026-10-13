@@ -1,17 +1,17 @@
 # Dependency audit and review
 
-The baseline is the 12 October 2026 GitHub Actions npm audit of the committed lockfile. The first migration reported 37 total affected packages (29 high), including 20 under `npm audit --omit=dev`. The cleaned branch reports 8 (5 high, 3 moderate), with zero production dependency findings. Advisory reports concern package versions and are not equivalent to demonstrated exploitability of the static website.
+## Tailwind CSS 4 migration — 13 October 2026
 
-## What changed
+The original imported lockfile contained 37 npm advisory findings (29 high), including 20 production dependency findings. Removing unused dependencies and upgrading the runtime reduced that inventory to eight development/build-tool findings (five high, three moderate), with zero production findings.
 
-The reachable-import review retained eleven direct browser-runtime packages and removed 44 unused files. Build-only `tailwindcss-animate` was moved to development dependencies, Vite was updated within its supported major line, and React Router moved to a patched v7 release. The lockfile was regenerated with npm on GitHub Actions; changes were verified with `npm ci`, static checks, smoke tests and the production audit.
+The isolated Tailwind CSS 4 [evaluation workflow](https://github.com/fraware/verse/actions/runs/38351632571) regenerated the lockfile using Node.js 22, and passed `npm ci`, TypeScript checks, lint, unit tests, static-site build verification, and a **full `npm audit --json` scan reporting zero advisories of any severity**. The present pull request reruns the complete audit against its exact committed dependency tree and treats moderate-or-higher findings in **all packages** as a release blocker.
 
-## Residual findings
+## Toolchain changes
 
-The remaining reported development/build dependency names are `braces`, `chokidar`, `fast-glob`, `micromatch`, `postcss-nested`, `postcss-selector-parser`, `tailwindcss` (v3) and `tailwindcss-animate`. Several names are affected through transitive dependency relationships, not necessarily independently actionable security flaws. Potential consequences include excessive CPU/memory usage on pathological inputs processed during development or building, rather than direct runtime execution by site visitors.
+Tailwind CSS 4 uses the official `@tailwindcss/vite` plugin and the existing theme configuration explicitly imported from CSS. The obsolete Tailwind 3 `tailwindcss-animate`, separate PostCSS configuration and autoprefixer build dependencies are removed. Simple first-party toast animations preserve the intent of the previous plugin and respect reduced-motion preferences.
 
-The Tailwind CSS 3 to 4 migration changes plugin behavior and styling configuration, so it must be reviewed independently with full visual regression tests. Do not run forced dependency upgrades merely to obtain a green aggregate report. Restrict build inputs, review dependency updates, and track upstream fixes.
+The release tests check functional browser workflows, storage/migration integrity, application privacy, WCAG A/AA rules, and theme-related computed styles at desktop/mobile viewport widths in Chromium, Firefox and WebKit. An npm audit with no findings does not prove the program secure against undiscovered vulnerabilities or malicious dependencies. Upstream Tailwind 4 has a newer minimum-browser support floor (Chrome 111, Firefox 128, Safari 16.4); older browsers need separate compatibility consideration. Review a representative release's screenshots in addition to automated tests.
 
 ## Enforcement
 
-`npm audit --omit=dev --audit-level=moderate` is a CI release gate. `npm ci` uses the committed lockfile. Read detailed audit advisories in GitHub Actions, and continue to track the remaining build-tool risks in [issue #13](https://github.com/fraware/verse/issues/13). A zero reported production dependency count is not a substitute for security testing or review of malicious dependencies.
+`npm ci` uses the committed npm lockfile; `npm audit --audit-level=moderate` blocks release if new advisory findings appear. The related history and follow-up evidence are in [issue #13](https://github.com/fraware/verse/issues/13).
