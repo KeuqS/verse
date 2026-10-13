@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useLocalPoems } from "@/hooks/useLocalPoems";
 import { makeBackup, MAX_BACKUP_BYTES, parseBackup } from "@/lib/poems";
+import { listPoems } from "@/lib/poemStore";
 import type { Poem } from "@/lib/poems";
 
 export default function Collection() {
@@ -60,9 +61,11 @@ export default function Collection() {
     }
   }
 
-  function exportCollection() {
+  async function exportCollection() {
     try {
-      const payload = JSON.stringify(makeBackup(poems), null, 2);
+      // Export the last committed database state, not a possibly stale React snapshot.
+      const persisted = await listPoems();
+      const payload = JSON.stringify(makeBackup(persisted), null, 2);
       const url = URL.createObjectURL(new Blob([payload], { type: "application/json" }));
       const anchor = document.createElement("a");
       anchor.href = url;
