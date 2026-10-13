@@ -9,13 +9,35 @@ const context = await browser.newContext({
   acceptDownloads: true,
 });
 const page = await context.newPage();
+page.on("pageerror", error => console.error("BROWSER_EXCEPTION", error.stack || error.message));
+page.on("console", message => {
+  if (message.type() === "error" || message.type() === "warning") {
+    console.error("BROWSER_CONSOLE", message.type(), message.text());
+  }
+});
+page.on("requestfailed", request => console.error("FAILED_REQUEST", request.url(), request.failure()?.errorText));
+page.on("response", response => {
+  if (response.status() >= 400) console.error("HTTP_ERROR", response.status(), response.url());
+});
+
 const screenshots = "test-artifacts";
 await mkdir(screenshots, { recursive: true });
 page.on("dialog", dialog => dialog.accept());
 
 async function navigate(url) {
   await page.goto(url);
-  await page.locator("#root").waitFor({ state: "visible", timeout: 15000 });
+  try {
+    await page.locator("#root").waitFor({ state: "visible", timeout: 8000 });
+  } catch (cause) {
+    console.error("PAGE_DEBUG", await page.evaluate(() => ({
+      title: document.title,
+      url: location.href,
+      root: document.getElementById("root")?.innerHTML.slice(0, 800),
+      scripts: [...document.querySelectorAll("script")].map(s => s.src),
+      links: [...document.querySelectorAll('link[rel="stylesheet"]')].map(l => l.href)
+    })));
+    throw cause;
+  }
 }
 
 try {
