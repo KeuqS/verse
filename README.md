@@ -41,7 +41,7 @@ Open the address printed by Vite (normally `http://localhost:5173/`).
 | `npm run verify:dist` | Verify static build output |
 | `npm run preview` | Preview the compiled site |
 
-The [CI workflow](.github/workflows/ci.yml) runs static checks, production-dependency auditing, Chromium/Firefox/WebKit functional and privacy-isolation tests, and automated accessibility checks. Publication to GitHub Pages is gated on their success.
+The [CI workflow](.github/workflows/ci.yml) runs static checks, production-dependency auditing, Chromium/Firefox/WebKit functional, privacy-isolation and transactional-integrity tests, and automated accessibility checks. Publication to GitHub Pages is gated on their success.
 
 ## Deployment
 
@@ -56,9 +56,11 @@ A custom domain needs corresponding GitHub Pages and DNS settings. No external p
 
 ## Privacy and data durability
 
-Poems are persisted in the current browser's `localStorage` under `verse_poems`; storage is **device/browser-profile/origin-specific** and has no account sync. Anyone using the same browser profile can access its poems; use separate profiles for separate people. An unavailable, full, or damaged storage area prevents successful saves. Verse does not automatically upload poem contents to a server, and it self-hosts its fonts. Explicit external sharing transfers text to the chosen service, including through prefilled share URLs, before a post is published.
+Poems are persisted as individual records in this browser's **IndexedDB** database. Existing poems saved under the legacy `localStorage["verse_poems"]` key are copied into IndexedDB on first use; the legacy copy remains unchanged for recovery. New writing is not synchronized back to that old key. Storage is **browser-profile/device/origin-specific** and is not synchronized to another device. People sharing the same browser profile share the collection.
 
-**Export backups regularly.** Clearing browser data or changing the site's origin can make local content inaccessible. Restore accepts version-1 Verse JSON files, validates records, and preserves existing items if IDs conflict. It is not a full synchronization mechanism.
+IndexedDB transactions serialize concurrent saves and imports across tabs. Editing a poem from an obsolete snapshot triggers a conflict warning and an explicit **Save a separate copy** action. If browser storage is unavailable, full, or corrupted, Verse reports the error and retains unsaved text in the editor. Refresh old Verse tabs to avoid writing into their obsolete localStorage collection.
+
+**Export backups regularly.** Clearing browser data or changing the site's origin can make local content inaccessible. Restore accepts the same version-1 Verse JSON files, validates records, and preserves existing items if IDs conflict. It is not a full synchronization mechanism.
 
 See [data model and privacy](docs/DATA_AND_PRIVACY.md) for the backup format and trust boundaries.
 

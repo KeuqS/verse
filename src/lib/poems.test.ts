@@ -1,3 +1,4 @@
+import { matchesPoem } from "./poemStore.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { makeBackup, mergePoems, parseBackup, readPoems, writePoems, POEMS_KEY } from "./poems.ts";
@@ -36,4 +37,14 @@ test("storage reading and writing rejects corruption", () => {
 
 test("write failure does not create a phantom success", () => {
   assert.throws(() => writePoems([poem], { setItem: () => { throw new Error("quota"); } }));
+});
+
+test("same-poem conflict detection compares exact content and metadata", () => {
+  assert.equal(matchesPoem(poem, { ...poem }), true);
+  for (const changed of [
+    { ...poem, content: "revised text" },
+    { ...poem, title: "revised title" },
+    { ...poem, selected_poet: "rimbaud" },
+    { ...poem, is_public: true },
+  ]) assert.equal(matchesPoem(poem, changed), false);
 });
