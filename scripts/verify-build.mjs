@@ -31,8 +31,8 @@ if (html.includes('lovable.dev') || html.includes('lovable.app') || html.include
   throw new Error('Stale hosted-platform URL in built HTML');
 }
 
-const bundleText = [html, ...assets.filter(name => /\\.(css|js)$/.test(name)).map(name => readFileSync(join(outputDir, 'assets', name), 'utf8'))].join("\\n");
-if (/fonts\\.googleapis\\.com|fonts\\.gstatic\\.com/.test(bundleText)) {
+const bundleText = [html, ...assets.filter(name => /\.(css|js)$/.test(name)).map(name => readFileSync(join(outputDir, 'assets', name), 'utf8'))].join("\n");
+if (/fonts\.googleapis\.com|fonts\.gstatic\.com/.test(bundleText)) {
   throw new Error('Google Fonts reference found in the output despite first-party font policy');
 }
 if (!assets.some(name => name.endsWith('.woff2'))) {
