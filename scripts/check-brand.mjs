@@ -14,13 +14,13 @@ function collect(directory) {
 collect("src");
 if (!existsSync(favicon)) throw new Error("Shared favicon art is missing");
 const readme = readFileSync("README.md", "utf8");
-const embeddedImages = [...readme.matchAll(/<img\\b[^>]*>/gi)];
+const embeddedImages = [...readme.matchAll(/<img\b[^>]*>/gi)];
 if (embeddedImages.length !== 1 ||
     !embeddedImages[0][0].includes('./public/' + mark) ||
-    /!\\[[^\\]]*\\]\\([^)]*\\)/.test(readme)) {
+    /!\[[^\]]*\]\([^)]*\)/.test(readme)) {
   throw new Error("README must contain only the shared Verse logo image");
 }
-if (!/<h1>Verse<\\/h1>/.test(readme)) throw new Error("README title must be Verse");
+if (!/<h1>Verse<\/h1>/.test(readme)) throw new Error("README title must be Verse");
 if (readme.includes("verse-readme-cover.svg") ||
     existsSync("docs/assets/verse-readme-cover.svg")) {
   throw new Error("Remove the old README illustration; use only the logo");
