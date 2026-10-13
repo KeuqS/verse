@@ -45,7 +45,7 @@ jobs:
           GITHUB_PAGES=true npm run verify:dist
       - name: Start site and run browser interactions
         run: |
-          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/verse-preview.log 2>&1 &
+          GITHUB_PAGES=true npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/verse-preview.log 2>&1 &
           node scripts/smoke.mjs
       - name: Upload screenshots
         if: always()
