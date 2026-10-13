@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { BookOpen, Download, Clipboard, RotateCcw } from "lucide-react";
 import { VerseMark } from "@/components/VerseMark";
@@ -67,7 +68,7 @@ export default function Study() {
     setNotice("");
   }
 
-  function submitTrial(event: React.FormEvent<HTMLFormElement>) {
+  function submitTrial(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!trial || usefulness === null || friction === null ||
         taskCompleted === null || adherence === null) return;
@@ -108,7 +109,7 @@ export default function Study() {
       document.body.append(anchor);
       anchor.click();
       anchor.remove();
-      URL.revokeObjectURL(url);
+      window.setTimeout(() => URL.revokeObjectURL(url), 2000);
       setNotice("Local response file prepared. Nothing was submitted to Verse.");
     } catch {
       setNotice("Export failed. Your responses are still present on this page.");
