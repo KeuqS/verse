@@ -23,8 +23,8 @@ jobs:
       pages: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: npm
@@ -35,6 +35,8 @@ jobs:
         env:
           GITHUB_PAGES: 'true'
       - name: Verify and prepare static single-page application
+        env:
+          GITHUB_PAGES: "true"
         run: |
           npm run verify:dist
           cp dist/index.html dist/404.html
