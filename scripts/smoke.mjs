@@ -76,6 +76,8 @@ try {
   assert.ok((await page.locator("textarea").first().inputValue()).includes("melancholy"));
   await page.getByRole("button", { name: "Save poem" }).click();
   await page.getByRole("button", { name: "My Collection" }).click();
+  await page.getByRole("heading", { name: "My Collection" }).waitFor();
+  await page.locator("button[aria-current='true']").first().waitFor();
   assert.equal(await page.locator("button[aria-current='true']").count(), 1);
   await page.screenshot({ path: `${screenshots}/collection.png`, fullPage: true });
 
