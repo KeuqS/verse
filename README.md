@@ -41,7 +41,7 @@ Open the address printed by Vite (normally `http://localhost:5173/`).
 | `npm run verify:dist` | Verify static build output |
 | `npm run preview` | Preview the compiled site |
 
-The [CI workflow](.github/workflows/ci.yml) runs static checks, production-dependency auditing, Chromium/Firefox/WebKit functional and privacy-isolation tests, and automated accessibility checks. Publication to GitHub Pages is gated on their success.
+The [CI workflow](.github/workflows/ci.yml) runs static checks, production-dependency auditing, Chromium/Firefox/WebKit functional, privacy-isolation, and concurrent-tab data-integrity tests, and automated accessibility checks. Publication to GitHub Pages is gated on their success.
 
 ## Deployment
 
@@ -58,7 +58,7 @@ A custom domain needs corresponding GitHub Pages and DNS settings. No external p
 
 Poems are persisted in the current browser's `localStorage` under `verse_poems`; storage is **device/browser-profile/origin-specific** and has no account sync. Anyone using the same browser profile can access its poems; use separate profiles for separate people. An unavailable, full, or damaged storage area prevents successful saves. Verse does not automatically upload poem contents to a server, and it self-hosts its fonts. Explicit external sharing transfers text to the chosen service, including through prefilled share URLs, before a post is published.
 
-**Export backups regularly.** Clearing browser data or changing the site's origin can make local content inaccessible. Restore accepts version-1 Verse JSON files, validates records, and preserves existing items if IDs conflict. It is not a full synchronization mechanism.
+**Export backups regularly.** Clearing browser data or changing the site's origin can make local content inaccessible. Restore accepts version-1 Verse JSON files, validates records, and preserves existing items if IDs conflict. It is not a full synchronization mechanism. Writes are serialized between cooperating tabs using the browser Web Locks API; concurrent edits of one poem are refused with an option to save a separate copy. Browsers lacking Web Locks cannot save safely and report an error; older Verse tabs must be refreshed to participate in locking.
 
 See [data model and privacy](docs/DATA_AND_PRIVACY.md) for the backup format and trust boundaries.
 
