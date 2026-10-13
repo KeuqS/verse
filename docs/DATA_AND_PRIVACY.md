@@ -37,7 +37,6 @@ The exported file contains all writing in plain text: protect it accordingly. Im
 - There is no built-in server account, database, or cloud backup.
 - Browser-local storage is not encrypted by Verse or protected by per-person logins. People sharing the same device **and browser profile** have access to the same saved poems. Use separate browser profiles or device accounts if you need separation.
 - A browser can deny storage or clipboard access, or storage can reach its quota. Save actions report failure.
-- Concurrent saves, deletes, and backup imports from updated Verse tabs are serialized by the Web Locks API. Concurrent edits of the same poem trigger a conflict and preserve the editor draft with a separate-copy option. Old cached app tabs and external modifications are not bound by this protocol. If the browser does not support Web Locks, writing fails safely; copy text to another destination. Save a backup before substantive edits.
 - Clearing site data, private browsing, or changing domain/origin can orphan prior poems. There is no migration from a previous Lovable domain unless its browser data is exported separately.
 - Browser storage is readable by JavaScript executing in this origin. Treat external scripts, dependency updates, and XSS prevention as privacy-critical.
 - Clicking Tumblr or X first asks for confirmation. If accepted, opening the share URL transmits prefilled poem text to the chosen service **before any final post is published**. Native sharing and copying require separate user actions; review destination privacy terms.

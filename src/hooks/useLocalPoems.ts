@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Poem, POEMS_KEY, readPoems, mergePoems } from "@/lib/poems";
-import { commitPoems, matchesPoem, PoemConflictError } from "@/lib/poemTransactions";
+import { Poem, POEMS_KEY, readPoems, writePoems, mergePoems } from "@/lib/poems";
 export type { Poem } from "@/lib/poems";
 
 interface Snapshot { poems: Poem[]; error: string | null }
@@ -26,20 +25,21 @@ export function useLocalPoems() {
     return () => window.removeEventListener("storage", onStorage);
   }, [refetch]);
 
-  const apply = async <T,>(change: (current: Poem[]) => { poems: Poem[]; result: T }): Promise<T> => {
+  const persist = (poems: Poem[]): boolean => {
     try {
-      const next = await commitPoems(change);
-      setState({ poems: next.poems, error: null });
-      return next.result;
+      writePoems(poems);
+      setState({ poems, error: null });
+      return true;
     } catch (error) {
       setState(previous => ({ ...previous, error: error instanceof Error ? error.message : "Cannot save to browser storage." }));
-      throw error;
+      return false;
     }
   };
 
-  const savePoem = async (title: string, content: string, selectedPoet?: string): Promise<Poem> => {
-    if (!content.trim()) throw new Error("Cannot save an empty poem.");
-    return apply(previous => {
+  const savePoem = async (title: string, content: string, selectedPoet?: string): Promise<Poem | null> => {
+    if (!content.trim()) return null;
+    try {
+      const previous = readPoems();
       const now = new Date().toISOString();
       const poem: Poem = {
         id: crypto.randomUUID(),
@@ -50,30 +50,43 @@ export function useLocalPoems() {
         created_at: now,
         updated_at: now,
       };
-      return { poems: [poem, ...previous], result: poem };
-    });
+      return persist([poem, ...previous]) ? poem : null;
+    } catch (error) {
+      setState(previous => ({ ...previous, error: String(error) }));
+      return null;
+    }
   };
 
-  /** Reject edits based on an obsolete snapshot, even when timestamps collide. */
-  const updatePoem = async (
-    id: string, changes: Partial<Pick<Poem, "title" | "content" | "selected_poet">>, expected: Poem,
-  ): Promise<Poem> => apply(previous => {
-    const latest = previous.find(poem => poem.id === id);
-    if (!latest || !matchesPoem(latest, expected)) throw new PoemConflictError();
-    const updated = { ...latest, ...changes, updated_at: new Date().toISOString() };
-    return { poems: previous.map(poem => poem.id === id ? updated : poem), result: updated };
-  });
+  const updatePoem = async (id: string, changes: Partial<Pick<Poem, "title" | "content" | "selected_poet">>): Promise<boolean> => {
+    try {
+      const previous = readPoems();
+      if (!previous.some(poem => poem.id === id)) return false;
+      return persist(previous.map(poem => poem.id === id
+        ? { ...poem, ...changes, updated_at: new Date().toISOString() }
+        : poem));
+    } catch (error) {
+      setState(previous => ({ ...previous, error: String(error) }));
+      return false;
+    }
+  };
 
-  const deletePoem = async (id: string, expected: Poem): Promise<void> => apply(previous => {
-    const latest = previous.find(poem => poem.id === id);
-    if (!latest || !matchesPoem(latest, expected)) throw new PoemConflictError();
-    return { poems: previous.filter(poem => poem.id !== id), result: undefined };
-  });
+  const deletePoem = async (id: string): Promise<boolean> => {
+    try {
+      const previous = readPoems();
+      if (!previous.some(poem => poem.id === id)) return false;
+      return persist(previous.filter(poem => poem.id !== id));
+    } catch (error) {
+      setState(previous => ({ ...previous, error: String(error) }));
+      return false;
+    }
+  };
 
-  const importPoems = async (incoming: Poem[]): Promise<number> => apply(previous => {
+  const importPoems = (incoming: Poem[]): number => {
+    const previous = readPoems();
     const merged = mergePoems(previous, incoming);
-    return { poems: merged, result: merged.length - previous.length };
-  });
+    if (!persist(merged)) throw new Error("Could not save imported poems in this browser.");
+    return merged.length - previous.length;
+  };
 
   return {
     poems: state.poems, error: state.error, loading: false,

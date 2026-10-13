@@ -30,7 +30,6 @@ Deployment: GitHub Actions → GitHub Pages /verse/
 | `src/pages/Collection.tsx` | Collection management, backup exchange, accessible selection |
 | `src/hooks/useLocalPoems.ts` | Storage hook, cross-tab updates, success/error reporting |
 | `src/lib/poems.ts` | Validated record format and versioned export/import |
-| `src/lib/poemTransactions.ts` | Origin-scoped write serialization and stale-version checks |
 | `src/hooks/useLocalSuggestions.ts` | Deterministic curated example catalogue |
 | `src/components/SuggestionsPanel.tsx` | Example presentation and explicit application guard |
 | `src/components/SharingPanel.tsx` | Native/web sharing and clipboard behavior |
@@ -41,13 +40,13 @@ Deployment: GitHub Actions → GitHub Pages /verse/
 
 1. **Data durability:** storage is written before a successful save is reported. Read or write failure is surfaced to the user.
 2. **No silent clobbering:** malformed stored data is not replaced with an empty collection; backup imports validate before writing and prefer existing records for matching IDs.
-3. **Local scope and concurrency:** poems are stored per browser origin/profile. All current-version mutations run under the same origin-scoped Web Lock, serializing the read/modify/write operation. Stale edits and deletes are refused by comparing the entire saved record; a conflicting editor retains its draft with a separate-copy recovery action. Backups and localStorage schema v1 remain unchanged.
+3. **Local scope:** poems are stored per browser origin. Cross-tab updates trigger reloading, although simultaneous edits in two tabs are not transactional.
 4. **Suggestion scope:** examples are prewritten. An application action is enabled only if the current text contains the exact original phrase.
 5. **Public/private boundary:** there are no built-in credentials, auth, API calls for inference, or server persistence. External share actions happen only through user interaction.
 
 ## Trade-offs and future improvements
 
-Browser `localStorage` is straightforward and deployment-independent, but has quotas and no device synchronization. Web Locks serialize only cooperating tabs and only while the browser supports the API. Older app versions, external storage mutations, or disabled Web Locks lie outside this guarantee; writes fail closed if Web Locks are unavailable. An interrupted JavaScript execution cannot roll back a browser storage operation, although each JSON string is replaced in one setItem operation. For larger libraries, consider IndexedDB with explicit versioned migration, transactional storage, and backup-first recovery. For true collaboration, introduce a separate authenticated backend and explicit privacy controls.
+Browser `localStorage` is straightforward and deployment-independent, but has quotas, limited transactionality, and no device synchronization. For larger libraries, consider an IndexedDB abstraction with formal migration/versioning, optimistic concurrency, user-directed export, and tests for crash recovery. For true collaboration, introduce a separate authenticated backend and explicit privacy controls.
 
 The template catalogue is intentionally narrow: it does not model meter, linguistic quality, or authorial style empirically. Real analysis needs a documented method, evaluation dataset, failure cases, and independently assessed claims. No mathematical or literary-quality guarantee is made.
 

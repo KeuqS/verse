@@ -1,4 +1,3 @@
-import { matchesPoem } from "./poemTransactions.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { makeBackup, mergePoems, parseBackup, readPoems, writePoems, POEMS_KEY } from "./poems.ts";
@@ -37,16 +36,4 @@ test("storage reading and writing rejects corruption", () => {
 
 test("write failure does not create a phantom success", () => {
   assert.throws(() => writePoems([poem], { setItem: () => { throw new Error("quota"); } }));
-});
-
-
-test("concurrent-edit fingerprint compares content and metadata, not timestamps alone", () => {
-  assert.equal(matchesPoem(poem, { ...poem }), true);
-  for (const changed of [
-    { ...poem, content: "changed", updated_at: poem.updated_at },
-    { ...poem, title: "changed", updated_at: poem.updated_at },
-    { ...poem, selected_poet: "rimbaud", updated_at: poem.updated_at },
-    { ...poem, is_public: true, updated_at: poem.updated_at },
-    { ...poem, updated_at: "2026-10-12T01:00:00.000Z" },
-  ]) assert.equal(matchesPoem(changed, poem), false);
 });
