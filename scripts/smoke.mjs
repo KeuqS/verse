@@ -44,16 +44,27 @@ try {
   await navigate(root);
   await page.getByRole("heading", { name: "Refine Your Poetic Voice" }).waitFor();
   await page.screenshot({ path: `${screenshots}/landing.png`, fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: `${screenshots}/landing-mobile.png`, fullPage: true });
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  assert.ok(overflow <= 2, `Landing horizontal overflow: ${overflow}px`);
+  await page.setViewportSize({ width: 1280, height: 850 });
   await page.getByRole("link", { name: /Begin Writing/ }).click();
   await page.getByLabel("Title").fill("Smoke Test Poem");
   await page.locator("textarea").first().fill("very sad in the garden");
   await page.getByRole("button", { name: "Save poem" }).click();
   await page.getByText("Saved", { exact: true }).first().waitFor();
   await page.screenshot({ path: `${screenshots}/writing.png`, fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: `${screenshots}/writing-mobile.png`, fullPage: true });
+  const editorOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  assert.ok(editorOverflow <= 2, `Writing page horizontal overflow: ${editorOverflow}px`);
+  await page.setViewportSize({ width: 1280, height: 850 });
 
   await page.getByRole("button", { name: "My Collection" }).click();
   await page.getByRole("heading", { name: "My Collection" }).waitFor();
   await page.getByRole("button", { name: "Continue editing" }).click();
+  await page.waitForFunction(() => document.querySelector("#poem-title")?.value === "Smoke Test Poem");
   assert.equal(await page.getByLabel("Title").inputValue(), "Smoke Test Poem");
   assert.equal(await page.locator("textarea").first().inputValue(), "very sad in the garden");
 
