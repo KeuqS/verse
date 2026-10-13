@@ -20,7 +20,7 @@ Verse is a place to draft, revise, and collect poems without handing them to a c
 
 | **Compose** | **Explore** | **Keep** |
 | :--- | :--- | :--- |
-| Write and title poems in a focused editor. Save a new work or revise an existing one. | Choose a literary influence or general craft exercises. Each choice has its own curated examples. Apply a substitution only when its exact source phrase occurs in your draft. | Organize a personal collection, revisit earlier writing, import plain text, and carry your work away in a JSON backup. |
+| Write and title poems in a focused editor. Save a new work or revise an existing one. | Explore curated literary examples, then select an original passage to preview local echo, isolation, or omission experiments. Changes always require an explicit click. | Organize a personal collection, revisit earlier writing, import plain text, and carry your work away in a JSON backup. |
 
 > **On literary examples.** The examples are static, curated substitutions. Verse does not analyze a poem with a language model, evaluate its literary quality, or send drafts to a hosted inference service.
 
@@ -83,6 +83,7 @@ Its [GitHub Actions pipeline](.github/workflows/ci.yml) checks TypeScript, lint,
 | :--- | :--- |
 | [Architecture](docs/ARCHITECTURE.md) | Components, storage transactions, migration, and trade-offs |
 | [Literary exercises](docs/LITERARY_METHOD.md) | Editorial method, example matching, author references and limitations |
+| [Craft experiments](docs/CRAFT_EXPERIMENTS.md) | Selected-text previews, explicit application, guarded undo and evaluation limits |
 | [Testing and release checks](docs/TESTING.md) | Browser workflows, release gates, and known limits |
 | [Data and privacy](docs/DATA_AND_PRIVACY.md) | Local persistence, sharing behavior, and backups |
 | [Dependency review](docs/DEPENDENCIES.md) | Package audit evidence and compatibility notes |

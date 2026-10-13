@@ -11,6 +11,7 @@ Browser
   │   ├── title + content
   │   ├── poet selector
   │   ├── curated example catalogue
+  │   ├── selected-text craft previews
   │   ├── .txt importer
   │   └── explicit sharing controls
   └── Collection
@@ -33,6 +34,8 @@ Deployment: GitHub Actions → GitHub Pages /verse/
 | `src/lib/poemStore.ts` | IndexedDB transactions, conflict checks, idempotent legacy migration |
 | `src/lib/poems.ts` | Validated record format and versioned export/import |
 | `src/lib/literaryExamples.ts` | Shared poet registry, editorial catalogue, Unicode word-boundary matching |
+| `src/lib/craftExperiments.ts` | Pure snapshot-checked selected-text transformations |
+| `src/components/CraftExperiments.tsx` | Explicit previews and single-step guarded undo |
 | `src/hooks/useLocalSuggestions.ts` | Catalogue selection and local dismissal/application state |
 | `src/components/SuggestionsPanel.tsx` | Example presentation and explicit application guard |
 | `src/components/SharingPanel.tsx` | Native/web sharing and clipboard behavior |
@@ -45,7 +48,8 @@ Deployment: GitHub Actions → GitHub Pages /verse/
 2. **No silent clobbering:** malformed stored data is not replaced with an empty collection; backup imports validate before writing and prefer existing records for matching IDs.
 3. **Transactional local scope:** saved poems are individual IndexedDB records scoped to a browser origin/profile. All current create/update/delete/import operations run inside readwrite transactions; record comparisons reject stale same-poem updates and deletes. BroadcastChannel prompts other tabs to reload committed data.
 4. **Suggestion scope:** examples are prewritten exercises, one set per selectable influence. An application action is enabled only if the current text contains the exact case-sensitive original phrase at standalone Unicode word boundaries. The first matching occurrence changes only after explicit consent.
-5. **Public/private boundary:** there are no built-in credentials, auth, API calls for inference, or server persistence. External share actions happen only through user interaction.
+5. **Experiment scope:** selected-text craft previews check full draft snapshots and never write to storage until the writer explicitly saves. A one-step undo is available only if the result is unchanged.
+6. **Public/private boundary:** there are no built-in credentials, auth, API calls for inference, or server persistence. External share actions happen only through user interaction.
 
 ## Trade-offs and future improvements
 
