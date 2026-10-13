@@ -53,10 +53,18 @@ try {
   const id = initial.find(p => p.title === "Simultaneous A").id;
   const editA = await open(context, "write?poem=" + encodeURIComponent(id));
   const editB = await open(context, "write?poem=" + encodeURIComponent(id));
-  await editA.getByLabel("Poem", { exact: true }).waitFor();
-  await editA.waitForTimeout(150);
-  assert.equal(await editA.getByLabel("Poem", { exact: true }).inputValue(), "First distinct poem");
-  assert.equal(await editB.getByLabel("Poem", { exact: true }).inputValue(), "First distinct poem");
+  // Loaded editor text arrives asynchronously from IndexedDB. A fixed sleep
+  // races on WebKit, particularly with many open tabs.
+  for (const editor of [editA, editB]) {
+    const deadline = Date.now() + 15000;
+    let text = "";
+    while (Date.now() < deadline) {
+      text = await editor.getByLabel("Poem", { exact: true }).inputValue();
+      if (text === "First distinct poem") break;
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    assert.equal(text, "First distinct poem", "An editor must load the original revision before concurrent editing");
+  }
   await editA.getByLabel("Poem", { exact: true }).fill("First revision A");
   await editB.getByLabel("Poem", { exact: true }).fill("Independent revision B");
   await editA.getByRole("button", { name: "Save poem" }).click();
