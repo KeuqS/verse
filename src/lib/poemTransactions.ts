@@ -1,5 +1,5 @@
-import { POEMS_KEY, readPoems, writePoems } from "./poems";
-import type { Poem } from "./poems";
+import { POEMS_KEY, readPoems, writePoems } from "./poems.ts";
+import type { Poem } from "./poems.ts";
 
 /**
  * All Verse writes use one origin-scoped Web Lock. A single read/modify/write
