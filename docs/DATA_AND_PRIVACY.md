@@ -28,11 +28,12 @@ Local poems are stored as a JSON array at `localStorage["verse_poems"]`.
 }
 ```
 
-The exported file contains all writing in plain text: protect it accordingly. Import is capped at 2 MB; invalid JSON, malformed documents, and duplicate IDs are rejected. An import adds new IDs and keeps existing records in collisions. This is **merge-only**, not a restore-to-exact-state operation. Export a backup before importing, deleting, or clearing site data.
+The exported file contains all writing in plain text: protect it accordingly. Import is capped at 20 MB; invalid JSON, malformed documents, and duplicate IDs are rejected. An import adds new IDs and keeps existing records in collisions. This is **merge-only**, not a restore-to-exact-state operation. Export a backup before importing, deleting, or clearing site data.
 
 ## Trust and failure boundaries
 
 - A public GitHub repository contains application source, **not users' poems**. Browser writing does not enter the GitHub repository.
+- The page fetches typography from Google Fonts. Normal network metadata such as IP address and browser headers is disclosed to Google during font requests; poem content is not attached to those requests. System fonts serve as fallbacks if Google Fonts is blocked.
 - There is no built-in server account, database, or cloud backup.
 - A browser can deny storage or clipboard access, or storage can reach its quota. Save actions report failure.
 - Clearing site data, private browsing, or changing domain/origin can orphan prior poems. There is no migration from a previous Lovable domain unless its browser data is exported separately.

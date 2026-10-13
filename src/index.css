@@ -22,7 +22,7 @@
     --secondary-foreground: 25 15% 15%;
 
     --muted: 40 15% 92%;
-    --muted-foreground: 25 10% 45%;
+    --muted-foreground: 25 10% 39%;
 
     --accent: 45 35% 85%;
     --accent-foreground: 25 15% 15%;
@@ -38,7 +38,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 156 40% 28%;
 
     --radius: 0.5rem;
 
@@ -105,5 +105,14 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+/* Respect motion preferences without changing the design for other users. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

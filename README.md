@@ -41,14 +41,14 @@ Open the address printed by Vite (normally `http://localhost:5173/`).
 | `npm run verify:dist` | Verify static build output |
 | `npm run preview` | Preview the compiled site |
 
-The [CI workflow](.github/workflows/ci.yml) runs static checks and a browser-based smoke suite for core workflows.
+The [CI workflow](.github/workflows/ci.yml) runs static checks, production-dependency auditing, Chromium/Firefox/WebKit smoke tests, and automated accessibility checks. Publication to GitHub Pages is gated on their success.
 
 ## Deployment
 
 The production target is **GitHub Pages**, at `https://fraware.github.io/verse/`.
 
 1. Under **Settings → Pages**, select **GitHub Actions** as the publishing source.
-2. Push to `main`. The [Pages workflow](.github/workflows/pages.yml) compiles using the `/verse/` Vite base path and deploys `dist/`.
+2. Push to `main`. After all checks pass, the [publish job](.github/workflows/ci.yml) compiles using the `/verse/` Vite base path and deploys `dist/`.
 3. The workflow includes an SPA fallback for direct navigations to `/verse/write` and `/verse/collection`.
 4. Check the Pages workflow result before treating the site as live.
 
@@ -68,6 +68,7 @@ See [data model and privacy](docs/DATA_AND_PRIVACY.md) for the backup format and
 - [Testing](docs/TESTING.md) — checks, browser smoke cases, and validation limits
 - [Contributing](CONTRIBUTING.md) — change process and review criteria
 - [Security](SECURITY.md) — reporting and safe handling
+- [Dependency inventory](docs/DEPENDENCIES.md) — advisory evidence and build-tool risk
 - [Dependency audit issue](https://github.com/fraware/verse/issues/13) — inherited package advisories awaiting classification
 
 The source was migrated from the owner's private `verse-whisper-alchemy` project, at source commit `801efa918727e5fa805d616ea3f2ce7cc2b6d8f2`. The private source history, `.env`, and unused Lovable/Supabase integrations were excluded from this public repository.

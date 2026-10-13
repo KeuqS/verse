@@ -70,7 +70,7 @@ export default function Collection() {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
-    if (file.size > MAX_BACKUP_BYTES) { showError("Backup exceeds the 2 MB import limit."); return; }
+    if (file.size > MAX_BACKUP_BYTES) { showError("Backup exceeds the 20 MB import limit."); return; }
     try {
       const imported = parseBackup(await file.text());
       const added = importPoems(imported);

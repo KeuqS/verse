@@ -5,8 +5,9 @@
 1. **Static checks** — `npm ci`, `npm run typecheck`, `npm run lint` and `npm run build`.
 2. **Data contract** — `npm run test:unit` checks backup round trips, collision resolution, malformed inputs, storage failure, and duplicate IDs.
 3. **Build boundary** — `GITHUB_PAGES=true npm run build && GITHUB_PAGES=true npm run verify:dist` checks the Pages asset base and output presence.
-4. **Browser workflows** — the Playwright smoke script starts a local build and exercises the editor, collection, save/update, backup export/restore, and explicit suggestion application; screenshots are CI artifacts.
-5. **Deployment** — a completed GitHub Pages publish job plus HTTP/browser verification at the project URL.
+4. **Browser workflows** — the Playwright smoke script exercises the editor, collection, save/update, backup export/restore, import and suggestions in Chromium, Firefox and WebKit. Screenshots are CI artifacts.
+5. **Automated accessibility** — axe-core checks WCAG 2.0/2.1 A and AA rules for the landing, writing, and collection pages at desktop and mobile widths. The results are saved as CI artifacts; this does not replace expert screen-reader or keyboard testing.
+6. **Deployment** — a successful, validation-gated Pages publish job plus HTTP/browser verification at the project URL.
 
 A passing typecheck is not a substitute for interaction testing. Browser smoke tests verify a small representative path, not exhaustive platform, mobile, or accessibility coverage.
 
@@ -21,7 +22,7 @@ GITHUB_PAGES=true npm run build
 GITHUB_PAGES=true npm run verify:dist
 ```
 
-The browser suite uses Chromium in GitHub Actions with a fixed Playwright version installed in that runner. Its dependencies are isolated from the production bundle. See `.github/workflows/ci.yml` and `scripts/smoke.mjs`.
+The browser suite uses Chromium, Firefox and WebKit in GitHub Actions with a fixed Playwright version installed in that runner. Its dependencies are isolated from the production bundle. See `.github/workflows/ci.yml` and `scripts/smoke.mjs`.
 
 ## Manual release review
 

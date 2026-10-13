@@ -25,7 +25,7 @@ Deployment: GitHub Actions → GitHub Pages /verse/
 
 | Path | Responsibility |
 | --- | --- |
-| `src/App.tsx` | Page routing, providers, SPA base URL |
+| `src/App.tsx` | Browser routing, toast notifications, SPA base URL |
 | `src/pages/Index.tsx` | Unsaved editor state and save/update orchestration |
 | `src/pages/Collection.tsx` | Collection management, backup exchange, accessible selection |
 | `src/hooks/useLocalPoems.ts` | Storage hook, cross-tab updates, success/error reporting |
@@ -52,4 +52,4 @@ The template catalogue is intentionally narrow: it does not model meter, linguis
 
 ## Build boundary
 
-`GITHUB_PAGES=true` changes Vite's public base path to `/verse/`. The Pages workflow builds once using that flag, checks the compiled assets, copies `index.html` to `404.html` for SPA fallback, and deploys `dist/`. `npm run verify:dist` must receive the same variable when validating the Pages build.
+`GITHUB_PAGES=true` changes Vite's public base path to `/verse/`. The validated CI publish job builds using that flag only after quality, browser and accessibility jobs pass. It checks compiled assets, copies `index.html` to `404.html` for SPA fallback, and deploys `dist/`. `npm run verify:dist` must receive the same variable when validating the Pages build.

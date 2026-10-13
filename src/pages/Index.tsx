@@ -41,6 +41,16 @@ export default function Index() {
     clearSuggestions();
   }, [requestedPoem, poems, clearSuggestions]); // The loaded ID prevents reloading over unsaved edits.
 
+  useEffect(() => {
+    if (!dirty || !content.trim()) return;
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty, content]);
+
   const changeContent = (text: string) => {
     setContent(text);
     setDirty(true);
@@ -54,6 +64,7 @@ export default function Index() {
   };
 
   const resetDraft = () => {
+    if (dirty && content.trim() && !window.confirm("Discard unsaved changes to your current poem?")) return;
     loadedId.current = null;
     setContent("");
     setTitle("Untitled Poem");
@@ -118,7 +129,7 @@ export default function Index() {
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="ghost" size="sm" onClick={resetDraft}><FilePlus2 className="mr-1 h-4 w-4" /> New</Button>
             <Button variant="outline" size="sm" onClick={() => void save()}>Save poem</Button>
-            <CollectionLink />
+            <CollectionLink confirmUnsaved={dirty && !!content.trim()} />
             <Badge variant="secondary"><Scroll className="h-3 w-3 mr-1" />
               {!currentPoemId ? "Unsaved" : dirty ? "Modified" : "Saved"}
             </Badge>
@@ -135,6 +146,7 @@ export default function Index() {
             <label className="block mb-2 text-sm font-medium" htmlFor="poem-title">Title</label>
             <Input id="poem-title" value={title} onChange={event => { setTitle(event.target.value); setDirty(true); }}
               className="mb-4 bg-card/60 text-lg" maxLength={200} />
+            <label htmlFor="poem-content" className="block mb-2 text-sm font-medium">Poem</label>
             <WritingCanvas content={content} onContentChange={changeContent}
               placeholder={"Begin your verse here...\n\nYour words stay in this browser."} />
             <p className="mt-3 text-sm text-muted-foreground">Save explicitly. Your work is not synchronized to another device.</p>

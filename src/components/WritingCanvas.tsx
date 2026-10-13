@@ -17,8 +17,9 @@ export const WritingCanvas = ({ content, onContentChange, placeholder }: Writing
       "border-none shadow-none bg-card/50 backdrop-blur-sm transition-all duration-300",
       isFocused && "bg-card/80 shadow-lg"
     )}>
-      <div className="p-8">
+      <div className="p-4 sm:p-8">
         <Textarea
+          id="poem-content"
           value={content}
           onChange={(e) => onContentChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
