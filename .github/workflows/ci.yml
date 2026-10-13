@@ -55,6 +55,7 @@ jobs:
           GITHUB_PAGES=true npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/verse-preview.log 2>&1 &
           for browser in chromium firefox webkit; do
             VERSE_BROWSER="$browser" node scripts/smoke.mjs
+            VERSE_BROWSER="$browser" node scripts/privacy.mjs
           done
       - name: Upload screenshots
         if: always()
