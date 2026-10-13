@@ -34,7 +34,7 @@ Browser reload, local data clearing and device loss still threaten unsaved text.
 
 Automated tests establish deterministic transformations, no silent data writes during preview, exact preservation of surrounding text, stale-preview rejection, Unicode surrogate safety, guarded undo, integration with save-state tracking, and behavior in Chromium, Firefox and WebKit. The tests do **not** establish literary utility or improvement.
 
-A substantive literary usefulness evaluation would recruit consenting writers, use their own short drafts, and compare the selection-based exercises against the existing static catalogue and unaided revision. Its outcomes would include whether writers could complete the intended revision, whether text or edits were unintentionally lost, how often they accepted or cancelled changes, and a blinded human assessment of author-perceived usefulness. No such study has been conducted.
+A substantive literary usefulness evaluation would recruit consenting writers, use their own short drafts, and compare the selection-based exercises against the existing static catalogue and unaided revision. Its outcomes would include whether writers could complete the intended revision, whether text or edits were unintentionally lost, how often they accepted or cancelled changes, and a blinded human assessment of author-perceived usefulness. No such study has been conducted. A [reproducible exploratory pilot protocol](USABILITY_PILOT.md) now defines counterbalanced short writing tasks and a voluntary, text-free response instrument. An implemented protocol does not constitute empirical evaluation.
 
 ## Implementation
 

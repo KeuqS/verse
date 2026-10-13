@@ -2,7 +2,7 @@
 
 ## Design and execution model
 
-Verse is a client-only React 18 / TypeScript / Vite application. React Router handles three routes: `/` (landing), `/write` (editor), and `/collection` (saved documents). Tailwind CSS 4 and shadcn/Radix primitives supply a restrained editorial interface. The deployed build consists of static HTML, CSS, assets, and JavaScript.
+Verse is a client-only React 18 / TypeScript / Vite application. React Router handles three routes: `/` (landing), `/write` (editor), and `/collection` (saved documents), plus the opt-in `/study` research route. Tailwind CSS 4 and shadcn/Radix primitives supply a restrained editorial interface. The deployed build consists of static HTML, CSS, assets, and JavaScript.
 
 ```text
 Browser
@@ -36,6 +36,9 @@ Deployment: GitHub Actions → GitHub Pages /verse/
 | `src/lib/literaryExamples.ts` | Shared poet registry, editorial catalogue, Unicode word-boundary matching |
 | `src/lib/craftExperiments.ts` | Pure snapshot-checked selected-text transformations |
 | `src/components/CraftExperiments.tsx` | Explicit previews and single-step guarded undo |
+| `src/lib/pilotStudy.ts` | Optional offline research assignment and poem-free record format |
+| `src/pages/Study.tsx` | Independent voluntary study page, transient categorical responses |
+| `src/lib/pilotAnalysis.ts` | Strict local parsing and exploratory category summaries |
 | `src/hooks/useLocalSuggestions.ts` | Catalogue selection and local dismissal/application state |
 | `src/components/SuggestionsPanel.tsx` | Example presentation and explicit application guard |
 | `src/components/SharingPanel.tsx` | Native/web sharing and clipboard behavior |
