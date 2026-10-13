@@ -62,7 +62,7 @@ try {
   // Wait for the responsive layout to finish painting before capturing a full-page screenshot.
   await page.getByText("Literary Influence", { exact: true }).waitFor({ state: "visible" });
   await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-  const toastRect = await page.locator("[data-radix-toast-viewport]").boundingBox();
+  const toastRect = await page.getByTestId("verse-toast-viewport").boundingBox();
   assert.ok(toastRect && toastRect.y > 844 / 2, "Mobile toast viewport must not cover the editor header");
   await page.screenshot({ path: `${screenshots}/writing-mobile.png`, fullPage: true });
   const editorOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
