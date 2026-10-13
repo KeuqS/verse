@@ -26,8 +26,9 @@ export function SharingPanel({ content, title = "Untitled Poem", onSavePoem }: P
     }
   }
 
-  function open(url: string) {
-    // With noopener, browsers may return null even for an opened popup.
+  function open(url: string, destination: string) {
+    // Share URLs transmit poem text to the destination as soon as the URL opens.
+    if (!window.confirm(`Send your poem text to ${destination}? It will be included in the URL sent to that service before you decide whether to publish.`)) return;
     window.open(url, "_blank", "noopener,noreferrer,width=540,height=600");
   }
 
@@ -49,12 +50,12 @@ export function SharingPanel({ content, title = "Untitled Poem", onSavePoem }: P
   }
 
   function tumblr() {
-    open(`https://www.tumblr.com/widgets/share/tool?posttype=text&title=${encodeURIComponent(title)}&content=${encodeURIComponent(content)}&tags=poetry,writing`);
+    open(`https://www.tumblr.com/widgets/share/tool?posttype=text&title=${encodeURIComponent(title)}&content=${encodeURIComponent(content)}&tags=poetry,writing`, "Tumblr");
   }
 
   function xShare() {
     const truncated = content.length > 230 ? `${content.slice(0, 227)}...` : content;
-    open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(truncated)}`);
+    open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(truncated)}`, "X");
   }
 
   return (
@@ -89,7 +90,7 @@ export function SharingPanel({ content, title = "Untitled Poem", onSavePoem }: P
                 <ExternalLink className="h-4 w-4 mr-1" /> X
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">Third-party sharing opens an external service; you control the final post.</p>
+            <p className="text-xs text-muted-foreground">External sharing sends text to the chosen service before publication. Confirm before opening Tumblr or X.</p>
           </>
         )}
       </CardContent>
