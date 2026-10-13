@@ -2,7 +2,7 @@
 
 ## Local document schema
 
-Local poems are stored as a JSON array at `localStorage["verse_poems"]`.
+Saved poems are stored as individual records in the browser IndexedDB database `verse-local-poems`, object store `poems`. Older Verse collections are copied from `localStorage["verse_poems"]` into IndexedDB on initial use. This is non-destructive: the old storage key is retained and is not synchronized with new changes.
 
 ```json
 {
@@ -34,9 +34,11 @@ The exported file contains all writing in plain text: protect it accordingly. Im
 
 - A public GitHub repository contains application source, **not users' poems**. Browser writing does not enter the GitHub repository.
 - Typography is bundled with the site using Fontsource packages; the application does not request Google Fonts at runtime. Crimson Text and IBM Plex Mono are OFL-1.1 fonts. Normal network metadata is shared with the static site host when loading application assets.
-- There is no built-in server account, database, or cloud backup.
+- There is no built-in server account, remote database, or cloud backup. The only database is IndexedDB in the local browser profile.
 - Browser-local storage is not encrypted by Verse or protected by per-person logins. People sharing the same device **and browser profile** have access to the same saved poems. Use separate browser profiles or device accounts if you need separation.
-- A browser can deny storage or clipboard access, or storage can reach its quota. Save actions report failure.
+- A browser can deny IndexedDB or clipboard access, or storage can reach its quota. Save actions report failure without claiming success or deleting unsaved editor text.
+- Each current save, edit, delete, and backup import executes in an IndexedDB readwrite transaction. Stale edits of the same poem are refused, retaining the draft with a separate-copy recovery option.
+- First-use migration validates the legacy collection before writing anything and inserts records and a copy-once marker in one transaction. Malformed old data is not overwritten. Reload older Verse tabs before further writing; older localStorage-only clients are not coordinated with IndexedDB.
 - Clearing site data, private browsing, or changing domain/origin can orphan prior poems. There is no migration from a previous Lovable domain unless its browser data is exported separately.
 - Browser storage is readable by JavaScript executing in this origin. Treat external scripts, dependency updates, and XSS prevention as privacy-critical.
 - Clicking Tumblr or X first asks for confirmation. If accepted, opening the share URL transmits prefilled poem text to the chosen service **before any final post is published**. Native sharing and copying require separate user actions; review destination privacy terms.
