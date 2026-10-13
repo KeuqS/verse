@@ -84,6 +84,7 @@ Its [GitHub Actions pipeline](.github/workflows/ci.yml) checks TypeScript, lint,
 | [Architecture](docs/ARCHITECTURE.md) | Components, storage transactions, migration, and trade-offs |
 | [Literary exercises](docs/LITERARY_METHOD.md) | Editorial method, example matching, author references and limitations |
 | [Craft experiments](docs/CRAFT_EXPERIMENTS.md) | Selected-text previews, explicit application, guarded undo and evaluation limits |
+| [Exploratory study](docs/USABILITY_PILOT.md) | Voluntary pilot protocol, counterbalanced allocation and privacy limits |
 | [Testing and release checks](docs/TESTING.md) | Browser workflows, release gates, and known limits |
 | [Data and privacy](docs/DATA_AND_PRIVACY.md) | Local persistence, sharing behavior, and backups |
 | [Dependency review](docs/DEPENDENCIES.md) | Package audit evidence and compatibility notes |
