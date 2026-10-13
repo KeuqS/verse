@@ -7,7 +7,7 @@
 3. **Build boundary** — `GITHUB_PAGES=true npm run build && GITHUB_PAGES=true npm run verify:dist` checks the Pages asset base and output presence.
 4. **Browser workflows** — the Playwright smoke script exercises the editor, collection, save/update, backup export/restore, import and suggestions in Chromium, Firefox and WebKit. Screenshots are CI artifacts.
 5. **Automated accessibility** — axe-core checks WCAG 2.0/2.1 A and AA rules for the landing, writing, and collection pages at desktop and mobile widths. The results are saved as CI artifacts; this does not replace expert screen-reader or keyboard testing.
-6. **Deployment** — a completed GitHub Pages publish job plus HTTP/browser verification at the project URL.
+6. **Deployment** — a successful, validation-gated Pages publish job plus HTTP/browser verification at the project URL.
 
 A passing typecheck is not a substitute for interaction testing. Browser smoke tests verify a small representative path, not exhaustive platform, mobile, or accessibility coverage.
 

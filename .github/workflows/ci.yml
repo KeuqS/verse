@@ -8,6 +8,11 @@ on:
 permissions:
   contents: read
 
+# Only the newest revision on a branch can publish or report final checks.
+concurrency:
+  group: verse-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality:
     runs-on: ubuntu-latest
@@ -91,3 +96,40 @@ jobs:
           path: test-artifacts/axe-results.json
           if-no-files-found: ignore
           retention-days: 7
+
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [quality, browser, accessibility]
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install reproducibly
+        run: npm ci
+      - name: Build for GitHub Pages
+        run: npm run build
+        env:
+          GITHUB_PAGES: 'true'
+      - name: Verify and prepare SPA fallback
+        env:
+          GITHUB_PAGES: 'true'
+        run: |
+          npm run verify:dist
+          cp dist/index.html dist/404.html
+          touch dist/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -41,14 +41,14 @@ Open the address printed by Vite (normally `http://localhost:5173/`).
 | `npm run verify:dist` | Verify static build output |
 | `npm run preview` | Preview the compiled site |
 
-The [CI workflow](.github/workflows/ci.yml) runs static checks and a Chromium/Firefox/WebKit smoke suite and automated accessibility checks for core workflows.
+The [CI workflow](.github/workflows/ci.yml) runs static checks, production-dependency auditing, Chromium/Firefox/WebKit smoke tests, and automated accessibility checks. Publication to GitHub Pages is gated on their success.
 
 ## Deployment
 
 The production target is **GitHub Pages**, at `https://fraware.github.io/verse/`.
 
 1. Under **Settings → Pages**, select **GitHub Actions** as the publishing source.
-2. Push to `main`. The [Pages workflow](.github/workflows/pages.yml) compiles using the `/verse/` Vite base path and deploys `dist/`.
+2. Push to `main`. After all checks pass, the [publish job](.github/workflows/ci.yml) compiles using the `/verse/` Vite base path and deploys `dist/`.
 3. The workflow includes an SPA fallback for direct navigations to `/verse/write` and `/verse/collection`.
 4. Check the Pages workflow result before treating the site as live.
 
