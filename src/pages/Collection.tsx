@@ -110,10 +110,10 @@ export default function Collection() {
         </header>
         {error && <div role="alert" className="border border-destructive rounded-md p-4 mb-6 text-destructive">{error}</div>}
         <div className="mb-8 flex flex-wrap gap-3">
-          <Button onClick={exportCollection} variant="outline" disabled={!!error}>
+          <Button onClick={exportCollection} variant="outline" disabled={!!error || loading}>
             <Download className="h-4 w-4 mr-2" /> Export backup
           </Button>
-          <Button onClick={() => fileRef.current?.click()} variant="outline" disabled={!!error}>
+          <Button onClick={() => fileRef.current?.click()} variant="outline" disabled={!!error || loading}>
             <Upload className="h-4 w-4 mr-2" /> Restore backup
           </Button>
           <input
