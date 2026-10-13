@@ -89,5 +89,5 @@ If you deploy another copy, configure the Vite base URL and GitHub Pages path ap
 
 This source was migrated from the owner's private `verse-whisper-alchemy` project at commit `801efa918727e5fa805d616ea3f2ce7cc2b6d8f2`. Private history, credentials, and unused hosted integrations were excluded.
 
-**No license has been selected.** Public access to this repository does not grant permission to reuse or redistribute its source. Permission and licensing must be settled with the rights holder before incorporating the code into another project.
+**License:** [MIT](LICENSE), copyright © 2026 Mateo Petel. You may use, modify, distribute, and sublicense the project under the terms of the MIT License. Preserve the license and copyright notice in copies or substantial portions. Third-party dependencies and assets retain their respective licenses.
 

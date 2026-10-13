@@ -23,4 +23,4 @@ Verse prioritizes reliable writing workflows, clear epistemic claims, accessibil
 
 ## Licensing
 
-No license is currently granted. Contact the rights holder before reusing code beyond rights otherwise provided by law.
+Verse is licensed under the [MIT License](LICENSE). Contributions to this repository are made under the project's MIT terms unless explicitly agreed otherwise. Respect third-party licenses and include existing copyright and permission notices when distributing substantial portions of the project.
