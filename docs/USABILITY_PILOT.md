@@ -81,6 +81,18 @@ This illustrative excerpt shows one trial; a valid submitted record has three. T
 
 The study form stores answers in React memory only. It does not write localStorage, sessionStorage or IndexedDB, and makes no submission request. Browser asset retrieval from the static host remains necessary. Clearing the session or reloading removes in-memory responses. Completed downloads remain under the user's control, outside the app.
 
+## Offline descriptive analysis
+
+Once participants separately and voluntarily provide their response files, the study organizer can analyze them locally without sending data to Verse or an external service.
+
+```bash
+node --experimental-strip-types scripts/analyze-pilot.mjs responses/*.json
+```
+
+The command rejects unexpected fields, malformed scales, unsupported protocol versions, and trial labels that contradict the saved allocation. It prints aggregated category frequencies, completion and adherence counts, and participant-paired comparisons of usefulness for the craft workbench against the unaided and fixed-example conditions. It does not print individual submissions or raw filenames. The script accepts only completed three-trial records. The organizer must separately report recruitment, missing sessions, withdrawals and departures from the intended assignment schedule, including participants who never exported a file.
+
+The output is descriptive. Ratings are five-category ordinal judgments, and arithmetic differences between category codes do not themselves establish literary improvement. Do not interpret the aggregate as a causal estimate without a stronger prospective design and appropriate statistical analysis.
+
 ## Verification and reproducibility
 
 - `src/lib/pilotStudy.ts` defines stimuli, allocations, responses and export serialization.
