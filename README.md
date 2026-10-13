@@ -1,20 +1,14 @@
 <div align="center">
 
-<img src="./public/assets/verse-mark.jpg" width="88" height="88" alt="Verse brand mark, shared with the website favicon" />
+<img src="./public/assets/verse-mark.jpg" width="96" height="96" alt="Verse logo" />
 
-<img src="./docs/assets/verse-readme-cover.svg" alt="Verse. A quiet place for poetry. Write privately. Keep every word your own." width="100%" />
-
-**A quiet, browser-based writing companion for poets.**
-
-[**Enter the writing room**](https://fraware.github.io/verse/) · [**Explore the source**](https://github.com/fraware/verse) · [**Understand your privacy**](docs/DATA_AND_PRIVACY.md)
-
-<sub>FREE TO USE · PRIVATE BY DEFAULT · NO ACCOUNT</sub>
+<h1>Verse</h1>
 
 </div>
 
 ---
 
-## The writing room
+## A quiet place for poetry
 
 Verse is a place to draft, revise, and collect poems without handing them to a cloud service. Its typography, warm parchment palette, and considered spacing draw from the printed page. The interface is intentionally small, leaving room for the writing itself.
 
@@ -57,7 +51,7 @@ Open the address printed by Vite, usually `http://localhost:5173/`.
 | :--- | :--- |
 | `npm run typecheck` | TypeScript analysis |
 | `npm run lint` | ESLint |
-| `npm run test:unit` | Poem-schema and data-contract tests |
+| `npm run test:unit` | Poem, literary exercise, pilot and revision-contract tests |
 | `npm run build` | Production assets in `dist/` |
 | `npm run verify:dist` | Validate bundled assets and deployment paths |
 | `npm run preview` | Inspect the production build locally |
