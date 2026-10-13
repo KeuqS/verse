@@ -41,6 +41,12 @@ try {
   await a.waitForFunction(() => window.__ready);
   await save(a, "First concurrent title", "First concurrent poem");
   await save(b, "Second concurrent title", "Second concurrent poem");
+  // Dispatching a UI click does not guarantee its asynchronous handler has
+  // actually queued the lock request, especially under WebKit scheduling.
+  await a.waitForFunction(async () => {
+    const snapshot = await navigator.locks.query();
+    return snapshot.pending.filter(lock => lock.name === "verse:verse_poems:exclusive:v1").length >= 2;
+  });
   assert.deepEqual(await poems(a), [], "No write is allowed while the shared lock is held");
   await a.evaluate(() => window.__release());
   await a.waitForFunction(() => JSON.parse(localStorage.getItem("verse_poems") || "[]").length === 2);
@@ -86,10 +92,22 @@ try {
   await importer.getByLabel("Choose a Verse backup file").setInputFiles({
     name: "verse-backup.json", mimeType: "application/json", buffer: Buffer.from(backup),
   });
+  // File.text() resolves asynchronously, and event dispatch does not establish
+  // that importPoems has reached the lock. Wait for its queued request first.
+  await a.waitForFunction(async () => {
+    const snapshot = await navigator.locks.query();
+    return snapshot.pending.some(lock => lock.name === "verse:verse_poems:exclusive:v1");
+  });
   await save(creator, "New while restoring", "New poem while restoring");
+  // Both operations must be queued BEFORE unlocking; no timing assumption.
+  await a.waitForFunction(async () => {
+    const snapshot = await navigator.locks.query();
+    return snapshot.pending.filter(lock => lock.name === "verse:verse_poems:exclusive:v1").length >= 2;
+  });
   await a.evaluate(() => window.__release());
-  await importer.waitForFunction(() => JSON.parse(localStorage.getItem("verse_poems") || "[]").some(p => p.id === "imported-concurrent"));
+  await importer.getByText("Backup restored").first().waitFor();
   await creator.waitForFunction(() => JSON.parse(localStorage.getItem("verse_poems") || "[]").some(p => p.content === "New poem while restoring"));
+  await importer.waitForFunction(() => JSON.parse(localStorage.getItem("verse_poems") || "[]").some(p => p.id === "imported-concurrent"));
   const both = await poems(creator);
   assert.equal(both.length, 5, "Merge-only restore and concurrent save must preserve all five poems");
 
