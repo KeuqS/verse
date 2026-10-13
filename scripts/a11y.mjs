@@ -11,10 +11,9 @@ try {
     { width: 1280, height: 850, label: "desktop" },
     { width: 390, height: 844, label: "mobile" },
   ]) {
-    const context = await browser.newContext({ viewport });
+    const context = await browser.newContext({ viewport, bypassCSP: true });
     const page = await context.newPage();
     // axe injects code for testing; normal browser smoke tests keep CSP enforced.
-    await page.setBypassCSP(true);
     page.on("dialog", dialog => dialog.accept());
 
     for (const route of ["/", "/write", "/collection"]) {
