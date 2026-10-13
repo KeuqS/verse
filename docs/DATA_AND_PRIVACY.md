@@ -30,6 +30,10 @@ Saved poems are stored as individual records in the browser IndexedDB database `
 
 The exported file contains all writing in plain text: protect it accordingly. Import is capped at 20 MB; invalid JSON, malformed documents, and duplicate IDs are rejected. An import adds new IDs and keeps existing records in collisions. This is **merge-only**, not a restore-to-exact-state operation. Export a backup before importing, deleting, or clearing site data.
 
+## Optional usability pilot
+
+The separate `/study` route provides a voluntary research instrument. It collects only three sets of categorical answers in page memory and exports a JSON record with an allocation code, condition and prompt IDs, completion, usefulness, friction and reported adherence. It does **not** capture draft text, automatically transmit results, or write survey responses to browser storage. Reloading or leaving that page loses unsaved answers. Exported files may be re-identifiable if a researcher maintains an identified assignment log. The [pilot protocol](USABILITY_PILOT.md) describes these limits and the additional steps needed before conducting research with people.
+
 ## Trust and failure boundaries
 
 - A public GitHub repository contains application source, **not users' poems**. Browser writing does not enter the GitHub repository.
